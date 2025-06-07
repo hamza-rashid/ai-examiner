@@ -53,7 +53,7 @@ function App() {
     form.append("scheme", schemeFile);
 
     try {
-      const res = await fetch("https://ai-examiner-79zf.onrender.com", {
+      const res = await fetch("https://ai-examiner-79zf.onrender.com/mark", {
         method: "POST",
         body: form,
       });
