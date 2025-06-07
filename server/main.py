@@ -10,29 +10,32 @@ from firebase_admin import credentials, auth as admin_auth
 import os
 import json
 
-# Firebase Admin SDK init
-firebase_config = json.loads(os.environ["FIREBASE_CONFIG_JSON"])
-cred = credentials.Certificate(firebase_config)
-if not firebase_admin._apps:
-    firebase_admin.initialize_app(cred)
-
 app = FastAPI()
 
-# Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:3002",
+        "https://ai-examiner-ten.vercel.app",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+firebase_config = json.loads(os.environ["FIREBASE_CONFIG_JSON"])
+cred = credentials.Certificate(firebase_config)
+if not firebase_admin._apps:
+    firebase_admin.initialize_app(cred)
+
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Temporary in-memory usage tracking (swap with Firestore later)
 users_usage = {}
 
-# Middleware to verify Firebase token
+@app.get("/")
+def health():
+    return {"status": "ok"}
+
 @app.middleware("http")
 async def verify_firebase_token(request: Request, call_next):
     if request.url.path != "/mark":
@@ -46,13 +49,11 @@ async def verify_firebase_token(request: Request, call_next):
     try:
         decoded_token = admin_auth.verify_id_token(token)
         request.state.user = decoded_token["uid"]
-    except Exception as e:
+    except Exception:
         raise HTTPException(status_code=403, detail="Invalid Firebase token")
 
     return await call_next(request)
 
-
-# PDF → base64 image
 def image_to_base64(img):
     buffered = BytesIO()
     img.save(buffered, format="PNG")
@@ -62,7 +63,6 @@ def pdf_to_base64_images(pdf_bytes: bytes):
     images = convert_from_bytes(pdf_bytes)
     return [image_to_base64(img) for img in images]
 
-# Parse GPT response
 def parse_marking_output(raw: str):
     blocks = [b.strip() for b in raw.split("---") if b.strip()]
     questions = []
@@ -108,7 +108,6 @@ def parse_marking_output(raw: str):
 
     return {"questions": questions, "total": total}
 
-# Mark with Vision
 def mark_with_vision(student_images: list[str], scheme_images: list[str]) -> str:
     results = []
 
@@ -130,37 +129,30 @@ def mark_with_vision(student_images: list[str], scheme_images: list[str]) -> str
                             "text": """You are a professional GCSE Science examiner.
 
 You will be shown:
-- Multiple pages from a student's handwritten exam paper (with several questions and answers, possibly across multiple pages)
+- Multiple pages from a student's handwritten exam paper
 - Multiple pages from the official mark scheme
 
 Your task:
-1. Identify and extract **each exam question number** — including sub-questions (e.g., 1.1, 1.2, 2(a), 2(b)(ii), etc.)
-2. For each, extract the associated **student answer**
-3. Match it with the correct part of the mark scheme — even if it's located on another page
-4. Mark each answer **strictly** using the mark scheme. Award only marks that are explicitly allowed
-5. For each question, return the result using this structure:
+1. Extract each exam question number
+2. Extract the student answer
+3. Match it with the correct part of the mark scheme
+4. Mark strictly using only allowed points
+5. Return each result in the format:
 
 ---
 
 Question Number: [e.g. 1.2 or 2(b)(ii)]  
-Question: [copy from the student paper]  
+Question: [copied from student paper]  
 Max Marks: [e.g. 3]  
-Student Answer: [copy student's response]  
+Student Answer: [copied from paper]  
 Mark: X/Y  
-Comment: [brief examiner-style feedback, what was awarded, what was missing]
+Comment: [examiner-style feedback]
 
 ---
-Only include results. Do not explain your method or repeat the instructions. 
-Repeat for every identifiable question in the uploaded student paper.
-
-At the end, include:
 Total Marks: X/Y
 """
                         },
-                        {
-                            "type": "image_url",
-                            "image_url": {"url": f"data:image/png;base64,{student_img}"}
-                        },
+                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{student_img}"}},
                         *scheme_blocks
                     ]
                 }
@@ -172,7 +164,6 @@ Total Marks: X/Y
 
     return "\n\n".join(results)
 
-# Main endpoint
 @app.post("/mark")
 async def mark_paper(request: Request, student: UploadFile = File(...), scheme: UploadFile = File(...)):
     uid = request.state.user
@@ -189,6 +180,6 @@ async def mark_paper(request: Request, student: UploadFile = File(...), scheme: 
 
     raw_result = mark_with_vision(student_images, scheme_images)
     parsed = parse_marking_output(raw_result)
-
     parsed["credits_used"] = users_usage[uid]
+
     return parsed
