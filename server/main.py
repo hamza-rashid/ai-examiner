@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from openai import OpenAI
 from pdf2image import convert_from_bytes
 from io import BytesIO
@@ -10,6 +11,7 @@ from firebase_admin import credentials, auth as admin_auth
 import os
 import json
 
+
 app = FastAPI()
 
 app.add_middleware(
@@ -17,6 +19,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3002",
         "https://ai-examiner-ten.vercel.app",
+        "https://ai-examiner-ten.vercel.app/",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -24,7 +27,7 @@ app.add_middleware(
 )
 
 firebase_config = json.loads(os.environ["FIREBASE_CONFIG_JSON"])
-cred = credentials.Certificate(firebase_config)
+cred = credentials.Certificate("firebase-service-account.json")
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred)
 
@@ -38,21 +41,25 @@ def health():
 
 @app.middleware("http")
 async def verify_firebase_token(request: Request, call_next):
-    if request.url.path != "/mark":
+    auth_header = request.headers.get("Authorization")
+    
+    if not auth_header:
+        # No token? Proceed anyway (for unauthenticated users using free credits)
         return await call_next(request)
 
-    auth_header: Optional[str] = request.headers.get("Authorization")
-    if not auth_header or not auth_header.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
+    if not auth_header.startswith("Bearer "):
+        return JSONResponse(status_code=401, content={"detail": "Invalid token format"})
 
-    token = auth_header.split("Bearer ")[-1]
+    id_token = auth_header.split("Bearer ")[-1]
     try:
-        decoded_token = admin_auth.verify_id_token(token)
-        request.state.user = decoded_token["uid"]
-    except Exception:
-        raise HTTPException(status_code=403, detail="Invalid Firebase token")
+        decoded_token = admin_auth.verify_id_token(id_token)
+        request.state.user = decoded_token
+    except Exception as e:
+        return JSONResponse(status_code=401, content={"detail": "Invalid token"})
 
     return await call_next(request)
+
+    
 
 def image_to_base64(img):
     buffered = BytesIO()
