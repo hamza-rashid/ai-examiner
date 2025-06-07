@@ -8,9 +8,11 @@ from typing import Optional
 import firebase_admin
 from firebase_admin import credentials, auth as admin_auth
 import os
+import json
 
 # Firebase Admin SDK init
-cred = credentials.Certificate("firebase-service-account.json")  # secure this file!
+firebase_config = json.loads(os.environ["FIREBASE_CONFIG_JSON"])
+cred = credentials.Certificate(firebase_config)
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred)
 
