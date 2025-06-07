@@ -1,13 +1,19 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import App from "./App";
+import AuthPage from "./AuthPage";
 import { AuthProvider } from "./AuthContext";
 
-const root = ReactDOM.createRoot(document.getElementById("root") as HTMLElement);
-root.render(
+ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <AuthProvider>
-      <App />
+      <Router>
+        <Routes>
+          <Route path="/" element={<App />} />
+          <Route path="/auth" element={<AuthPage />} />
+        </Routes>
+      </Router>
     </AuthProvider>
   </React.StrictMode>
 );

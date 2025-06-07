@@ -19,7 +19,6 @@ import { useUser } from "./AuthContext";
 import { getIdToken } from "firebase/auth";
 import { auth } from "./firebase";
 
-
 const FaUploadIcon = FaUpload as unknown as React.ElementType;
 const FaFilePdfIcon = FaFilePdf as unknown as React.ElementType;
 const FaFileAltIcon = FaFileAlt as unknown as React.ElementType;
@@ -185,98 +184,115 @@ function App() {
 
   return (
     <ChakraProvider theme={theme}>
-      <Box
-        bgImage="url('/background.jpg')"
-        bgSize="cover"
-        bgPosition="center"
-        minH="100vh"
-        display="flex"
-        alignItems="center"
-        justifyContent="center"
-        px={4}
-        py={10}
-      >
-        <Box
-          w="full"
-          maxW="800px"
-          textAlign="center"
-          bg="rgba(255,255,255,0.85)"
-          p={8}
-          borderRadius="2xl"
-          boxShadow="2xl"
-          backdropFilter="blur(12px)"
-        >
-          <HStack justifyContent="space-between" mb={4}>
-            <Heading size="lg">AI GCSE Paper Marker</Heading>
-            <VStack spacing={0} align="end">
-              <Badge colorScheme="green" px={3} py={1} borderRadius="md">
-                {user ? "Logged In" : `${credits} credits left`}
-              </Badge>
-              {!user && (
-                <Text fontSize="xs" color="gray.500">
-                  {MAX_FREE_CREDITS - credits} used
-                </Text>
-              )}
-            </VStack>
-          </HStack>
-
-          <Text mb={6} color="gray.700" fontSize="md">
-            Upload a student’s paper and a mark scheme – we’ll mark it using examiner-level accuracy.
-          </Text>
-
-          <VStack spacing={4}>
-            {renderFileInput("Student Paper", studentFile, setStudentFile, "student")}
-            {renderFileInput("Mark Scheme", schemeFile, setSchemeFile, "scheme")}
+      <Box position="relative" minH="100vh" bg="gray.50">
+        {/* Top-right auth button */}
+        <Box position="absolute" top="1rem" right="1rem" zIndex={10}>
+          {!user && (
             <Button
               colorScheme="green"
-              size="lg"
-              onClick={handleSubmit}
-              isDisabled={!studentFile || !schemeFile || loading}
-              w="full"
+              variant="outline"
+              size="sm"
+              borderRadius="md"
+              onClick={() => (window.location.href = "/auth")}
             >
-              {loading ? "Marking..." : "Mark Paper"}
+              Login / Sign Up
             </Button>
-          </VStack>
-
-          {result && (
-            <VStack spacing={6} align="stretch" mt={10}>
-              <Heading size="md" textAlign="left" mb={2}>
-                Marking Breakdown
-              </Heading>
-              <Text color="gray.600" fontSize="sm" mb={4}>
-                Here's how the student performed, based on official mark scheme criteria:
-              </Text>
-              {result.questions.map((q, i) => (
-                <Box
-                  key={i}
-                  bg="white"
-                  borderRadius="xl"
-                  boxShadow="lg"
-                  border="1px solid #E2E8F0"
-                  p={6}
-                  textAlign="left"
-                >
-                  <Text fontWeight="bold" fontSize="lg" mb={1}>
-                    Question {q.questionNumber} — <Badge>{q.mark}</Badge>
-                  </Text>
-                  <Text fontSize="sm" color="gray.600" mb={2}>
-                    <strong>Question:</strong> {q.question}
-                  </Text>
-                  <Box mb={3}>
-                    <Text fontWeight="semibold" mb={1}>Student Answer:</Text>
-                    <Text whiteSpace="pre-line" color="gray.800">{q.studentAnswer.trim()}</Text>
-                  </Box>
-                  <Box>
-                    <Text fontWeight="semibold" mb={1}>Examiner Comment:</Text>
-                    <Text whiteSpace="pre-line" color="gray.700">{q.comment}</Text>
-                  </Box>
-                </Box>
-              ))}
-              <Box textAlign="center" fontWeight="bold" fontSize="lg" py={3} borderTop="1px solid #E2E8F0">
-                Total Marks Awarded: {result.total}
-              </Box>
-            </VStack>
           )}
+        </Box>
+
+        <Box
+          bgImage="url('/background.jpg')"
+          bgSize="cover"
+          bgPosition="center"
+          minH="100vh"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          px={4}
+          py={10}
+        >
+          <Box
+            w="full"
+            maxW="800px"
+            textAlign="center"
+            bg="rgba(255,255,255,0.85)"
+            p={8}
+            borderRadius="2xl"
+            boxShadow="2xl"
+            backdropFilter="blur(12px)"
+          >
+            <HStack justifyContent="space-between" mb={4}>
+              <Heading size="lg">AI GCSE Paper Marker</Heading>
+              <VStack spacing={0} align="end">
+                <Badge colorScheme="green" px={3} py={1} borderRadius="md">
+                  {user ? "Logged In" : `${credits} credits left`}
+                </Badge>
+                {!user && (
+                  <Text fontSize="xs" color="gray.500">
+                    {MAX_FREE_CREDITS - credits} used
+                  </Text>
+                )}
+              </VStack>
+            </HStack>
+
+            <Text mb={6} color="gray.700" fontSize="md">
+              Upload a student’s paper and a mark scheme – we’ll mark it using examiner-level accuracy.
+            </Text>
+
+            <VStack spacing={4}>
+              {renderFileInput("Student Paper", studentFile, setStudentFile, "student")}
+              {renderFileInput("Mark Scheme", schemeFile, setSchemeFile, "scheme")}
+              <Button
+                colorScheme="green"
+                size="lg"
+                onClick={handleSubmit}
+                isDisabled={!studentFile || !schemeFile || loading}
+                w="full"
+              >
+                {loading ? "Marking..." : "Mark Paper"}
+              </Button>
+            </VStack>
+
+            {result && (
+              <VStack spacing={6} align="stretch" mt={10}>
+                <Heading size="md" textAlign="left" mb={2}>
+                  Marking Breakdown
+                </Heading>
+                <Text color="gray.600" fontSize="sm" mb={4}>
+                  Here's how the student performed, based on official mark scheme criteria:
+                </Text>
+                {result.questions.map((q, i) => (
+                  <Box
+                    key={i}
+                    bg="white"
+                    borderRadius="xl"
+                    boxShadow="lg"
+                    border="1px solid #E2E8F0"
+                    p={6}
+                    textAlign="left"
+                  >
+                    <Text fontWeight="bold" fontSize="lg" mb={1}>
+                      Question {q.questionNumber} — <Badge>{q.mark}</Badge>
+                    </Text>
+                    <Text fontSize="sm" color="gray.600" mb={2}>
+                      <strong>Question:</strong> {q.question}
+                    </Text>
+                    <Box mb={3}>
+                      <Text fontWeight="semibold" mb={1}>Student Answer:</Text>
+                      <Text whiteSpace="pre-line" color="gray.800">{q.studentAnswer.trim()}</Text>
+                    </Box>
+                    <Box>
+                      <Text fontWeight="semibold" mb={1}>Examiner Comment:</Text>
+                      <Text whiteSpace="pre-line" color="gray.700">{q.comment}</Text>
+                    </Box>
+                  </Box>
+                ))}
+                <Box textAlign="center" fontWeight="bold" fontSize="lg" py={3} borderTop="1px solid #E2E8F0">
+                  Total Marks Awarded: {result.total}
+                </Box>
+              </VStack>
+            )}
+          </Box>
         </Box>
       </Box>
     </ChakraProvider>
