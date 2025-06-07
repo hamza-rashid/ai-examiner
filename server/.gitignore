@@ -1,0 +1,16 @@
+# Firebase service account (DO NOT COMMIT)
+firebase-service-account.json
+
+# Local environment variables (optional if only using Vercel)
+.env
+.env.local
+.env.*.local
+
+# Node modules
+node_modules/
+
+# Logs and debug files
+*.log
+
+# OS-specific
+.DS_Store

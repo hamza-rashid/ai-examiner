@@ -1,10 +1,18 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, UploadFile, File, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from openai import OpenAI
 from pdf2image import convert_from_bytes
 from io import BytesIO
 from base64 import b64encode
+from typing import Optional
+import firebase_admin
+from firebase_admin import credentials, auth as admin_auth
 import os
+
+# Firebase Admin SDK init
+cred = credentials.Certificate("firebase-service-account.json")  # secure this file!
+if not firebase_admin._apps:
+    firebase_admin.initialize_app(cred)
 
 app = FastAPI()
 
@@ -19,8 +27,30 @@ app.add_middleware(
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# Temporary in-memory usage tracking (swap with Firestore later)
+users_usage = {}
 
-# Convert PDF to list of base64 images
+# Middleware to verify Firebase token
+@app.middleware("http")
+async def verify_firebase_token(request: Request, call_next):
+    if request.url.path != "/mark":
+        return await call_next(request)
+
+    auth_header: Optional[str] = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
+
+    token = auth_header.split("Bearer ")[-1]
+    try:
+        decoded_token = admin_auth.verify_id_token(token)
+        request.state.user = decoded_token["uid"]
+    except Exception as e:
+        raise HTTPException(status_code=403, detail="Invalid Firebase token")
+
+    return await call_next(request)
+
+
+# PDF → base64 image
 def image_to_base64(img):
     buffered = BytesIO()
     img.save(buffered, format="PNG")
@@ -30,7 +60,7 @@ def pdf_to_base64_images(pdf_bytes: bytes):
     images = convert_from_bytes(pdf_bytes)
     return [image_to_base64(img) for img in images]
 
-# Parse OpenAI raw response into structured JSON
+# Parse GPT response
 def parse_marking_output(raw: str):
     blocks = [b.strip() for b in raw.split("---") if b.strip()]
     questions = []
@@ -76,11 +106,11 @@ def parse_marking_output(raw: str):
 
     return {"questions": questions, "total": total}
 
-# Call OpenAI with vision and your prompt
+# Mark with Vision
 def mark_with_vision(student_images: list[str], scheme_images: list[str]) -> str:
     results = []
 
-    scheme_image_blocks = [
+    scheme_blocks = [
         {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{img}"}}
         for img in scheme_images
     ]
@@ -129,7 +159,7 @@ Total Marks: X/Y
                             "type": "image_url",
                             "image_url": {"url": f"data:image/png;base64,{student_img}"}
                         },
-                        *scheme_image_blocks
+                        *scheme_blocks
                     ]
                 }
             ],
@@ -140,9 +170,15 @@ Total Marks: X/Y
 
     return "\n\n".join(results)
 
-# API endpoint
+# Main endpoint
 @app.post("/mark")
-async def mark_paper(student: UploadFile = File(...), scheme: UploadFile = File(...)):
+async def mark_paper(request: Request, student: UploadFile = File(...), scheme: UploadFile = File(...)):
+    uid = request.state.user
+
+    users_usage[uid] = users_usage.get(uid, 0) + 1
+    if users_usage[uid] > 10:
+        raise HTTPException(status_code=429, detail="Monthly limit reached")
+
     student_bytes = await student.read()
     scheme_bytes = await scheme.read()
 
@@ -152,4 +188,5 @@ async def mark_paper(student: UploadFile = File(...), scheme: UploadFile = File(
     raw_result = mark_with_vision(student_images, scheme_images)
     parsed = parse_marking_output(raw_result)
 
+    parsed["credits_used"] = users_usage[uid]
     return parsed
