@@ -17,6 +17,8 @@ import {
 import { FaFilePdf, FaUpload, FaFileAlt } from "react-icons/fa";
 import { useUser } from "./AuthContext";
 import { getIdToken } from "firebase/auth";
+import { auth } from "./firebase";
+
 
 const FaUploadIcon = FaUpload as unknown as React.ElementType;
 const FaFilePdfIcon = FaFilePdf as unknown as React.ElementType;
