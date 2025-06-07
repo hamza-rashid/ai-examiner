@@ -43,22 +43,24 @@ def health():
 @app.middleware("http")
 async def verify_firebase_token(request: Request, call_next):
     auth_header = request.headers.get("Authorization")
-    
+
     if not auth_header:
-        # No token? Proceed anyway (for unauthenticated users using free credits)
+        #Explicitly mark as unauthenticated
+        request.state.user = None
         return await call_next(request)
 
     if not auth_header.startswith("Bearer "):
-        return JSONResponse(status_code=401, content={"detail": "Invalid token format"})
+        return JSONResponse(status_code=400, content={"detail": "Invalid token format"})
 
-    id_token = auth_header.split("Bearer ")[-1]
+    id_token = auth_header[len("Bearer "):]
     try:
         decoded_token = admin_auth.verify_id_token(id_token)
-        request.state.user = decoded_token
-    except Exception as e:
+        request.state.user = decoded_token["uid"]
+    except Exception:
         return JSONResponse(status_code=401, content={"detail": "Invalid token"})
 
     return await call_next(request)
+
 
 
 
@@ -174,11 +176,13 @@ Total Marks: X/Y
 
 @app.post("/mark")
 async def mark_paper(request: Request, student: UploadFile = File(...), scheme: UploadFile = File(...)):
-    uid = request.state.user
+    uid = request.state.user or "anonymous"
 
-    users_usage[uid] = users_usage.get(uid, 0) + 1
-    if users_usage[uid] > 10:
-        raise HTTPException(status_code=429, detail="Monthly limit reached")
+    # Only enforce limit for authenticated users
+    if uid != "anonymous":
+        users_usage[uid] = users_usage.get(uid, 0) + 1
+        if users_usage[uid] > 10:
+            raise HTTPException(status_code=429, detail="Monthly limit reached")
 
     student_bytes = await student.read()
     scheme_bytes = await scheme.read()
@@ -188,6 +192,9 @@ async def mark_paper(request: Request, student: UploadFile = File(...), scheme: 
 
     raw_result = mark_with_vision(student_images, scheme_images)
     parsed = parse_marking_output(raw_result)
-    parsed["credits_used"] = users_usage[uid]
+
+    if uid != "anonymous":
+        parsed["credits_used"] = users_usage[uid]
 
     return parsed
+
