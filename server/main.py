@@ -26,8 +26,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 firebase_config = json.loads(os.environ["FIREBASE_CONFIG_JSON"])
-cred = credentials.Certificate("firebase-service-account.json")
+cred = credentials.Certificate(firebase_config)
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred)
 
@@ -59,7 +60,7 @@ async def verify_firebase_token(request: Request, call_next):
 
     return await call_next(request)
 
-    
+
 
 def image_to_base64(img):
     buffered = BytesIO()
