@@ -9,6 +9,7 @@ import { useUser } from "./AuthContext";
 import { getIdToken } from "firebase/auth";
 import { auth } from "./firebase";
 import { useNavigate } from "react-router-dom";
+import { extendTheme } from "@chakra-ui/react";
 
 type ExamResult = {
   id: string;
@@ -27,6 +28,13 @@ type ExamResult = {
   studentFileName: string;
   schemeFileName: string;
 };
+
+const theme = extendTheme({
+  fonts: {
+    heading: "Inter, sans-serif",
+    body: "Inter, sans-serif",
+  },
+});
 
 function Dashboard() {
   const [exams, setExams] = useState<ExamResult[]>([]);
@@ -95,27 +103,18 @@ function Dashboard() {
   }
 
   return (
-    <Box minH="100vh" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" py={12} px={4}>
-      <Box
-        maxW="1200px"
-        mx="auto"
-        bg="rgba(255,255,255,0.85)"
-        borderRadius="2xl"
-        p={[6, 10]}
-        boxShadow="2xl"
-        backdropFilter="blur(12px)"
-      >
-        <Heading fontSize={["2xl", "3xl"]} fontWeight="extrabold" mb={8} display="flex" alignItems="center" gap={3} color="gray.800">
-          <Icon as={FaFileAltIcon} boxSize={7} color="green.500" /> Your Marked Papers
+    <Box minH="100vh" w="100vw" fontFamily="Inter, sans-serif" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" display="flex" flexDirection="column" alignItems="center" justifyContent="flex-start" px={2} py={0}>
+      <Box w="full" maxW="540px" mt={[8, 16]} mb={8} px={[2, 0]}>
+        <Heading fontSize={["2xl", "3xl"]} fontWeight="extrabold" mb={8} color="gray.800" textAlign="left" letterSpacing="tight">
+          <Icon as={FaFileAltIcon} boxSize={7} color="green.500" mb={-1} mr={2} />
+          Your Marked Papers
         </Heading>
-
         {error && (
           <VStack spacing={3} mb={6}>
             <Text color="red.500">{error}</Text>
             <Button colorScheme="green" onClick={fetchExams}>Retry</Button>
           </VStack>
         )}
-
         {loading ? (
           <Box minH="300px" display="flex" alignItems="center" justifyContent="center">
             <Spinner size="xl" color="green.500" thickness="4px" />
@@ -127,59 +126,51 @@ function Dashboard() {
             <Text fontSize="md" color="gray.400">Go back and mark your first paper!</Text>
           </VStack>
         ) : (
-          <Box w="full">
-            <Box
-              display="grid"
-              gridTemplateColumns={{ base: "1fr", md: "1fr 1fr", lg: "1fr 1fr 1fr" }}
-              gap={7}
-            >
-              {exams.map((exam) => (
-                <Box
-                  key={exam.id}
-                  bg="white"
-                  borderRadius="xl"
-                  boxShadow="lg"
-                  border="1px solid #E2E8F0"
-                  p={6}
-                  display="flex"
-                  flexDirection="column"
-                  justifyContent="space-between"
-                  minH="220px"
-                  transition="box-shadow 0.2s"
-                  _hover={{ boxShadow: "2xl", borderColor: "green.200" }}
-                >
-                  <HStack spacing={3} mb={2} color="gray.500">
-                    <Icon as={FaCalendarIcon} />
-                    <Text fontSize="sm">{formatDate(exam.timestamp)}</Text>
-                  </HStack>
-                  <VStack align="start" spacing={1} mb={3}>
-                    <HStack>
-                      <Icon as={FaPdfIcon} color="green.400" />
-                      <Text fontSize="md" fontWeight="medium" color="gray.700">{exam.studentFileName}</Text>
-                    </HStack>
-                    <HStack>
-                      <Icon as={FaCheckIcon} color="green.400" />
-                      <Text fontSize="md" color="gray.600">{exam.schemeFileName}</Text>
-                    </HStack>
-                  </VStack>
-                  <HStack justifyContent="space-between" mt={2}>
-                    <Badge colorScheme="green" px={3} py={1} borderRadius="lg" fontSize="md" fontWeight="bold">
-                      {exam.result.total}
-                    </Badge>
-                    <Button
-                      size="sm"
-                      colorScheme="green"
-                      variant="solid"
-                      fontWeight="semibold"
-                      onClick={() => navigate(`/exam/${exam.id}`)}
-                    >
-                      View
-                    </Button>
-                  </HStack>
-                </Box>
-              ))}
-            </Box>
-          </Box>
+          <VStack spacing={6} align="stretch">
+            {exams.map((exam) => (
+              <Box
+                key={exam.id}
+                bg="white"
+                borderRadius="2xl"
+                boxShadow="lg"
+                p={[5, 7]}
+                display="flex"
+                flexDirection="column"
+                gap={3}
+                _hover={{ boxShadow: "2xl", transform: "translateY(-2px) scale(1.01)" }}
+                transition="all 0.18s"
+              >
+                <HStack spacing={2} color="gray.500" fontSize="sm">
+                  <Icon as={FaCalendarIcon} boxSize={4} />
+                  <Text>{formatDate(exam.timestamp)}</Text>
+                </HStack>
+                <HStack spacing={2} color="gray.700" fontWeight="medium">
+                  <Icon as={FaPdfIcon} color="green.400" boxSize={5} />
+                  <Text fontSize="md">{exam.studentFileName}</Text>
+                </HStack>
+                <HStack spacing={2} color="gray.600">
+                  <Icon as={FaCheckIcon} color="green.400" boxSize={5} />
+                  <Text fontSize="md">{exam.schemeFileName}</Text>
+                </HStack>
+                <HStack justifyContent="space-between" alignItems="center" mt={2}>
+                  <Badge colorScheme="green" px={3} py={1} borderRadius="lg" fontSize="lg" fontWeight="bold" letterSpacing="tight">
+                    {exam.result.total}
+                  </Badge>
+                  <Button
+                    size="md"
+                    colorScheme="green"
+                    borderRadius="xl"
+                    fontWeight="semibold"
+                    px={6}
+                    py={2}
+                    onClick={() => navigate(`/exam/${exam.id}`)}
+                  >
+                    View
+                  </Button>
+                </HStack>
+              </Box>
+            ))}
+          </VStack>
         )}
       </Box>
 
