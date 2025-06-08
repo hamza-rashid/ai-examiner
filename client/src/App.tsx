@@ -245,6 +245,7 @@ function App() {
                 size="sm"
                 onClick={() => window.location.href = "/dashboard"}
                 mb={1}
+                mr={3}
               >
                 View History
               </Button>

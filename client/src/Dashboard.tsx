@@ -25,6 +25,7 @@ import {
 import { useUser } from "./AuthContext";
 import { getIdToken } from "firebase/auth";
 import { auth } from "./firebase";
+import { useNavigate } from "react-router-dom";
 
 type ExamResult = {
   id: string;
@@ -51,6 +52,7 @@ function Dashboard() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
   const user = useUser();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!user) return;
@@ -123,65 +125,82 @@ function Dashboard() {
   }
 
   return (
-    <Box p={8}>
-      <VStack spacing={8} align="stretch">
-        <Heading size="lg">Your Exam History</Heading>
-        
+    <Box minH="100vh" bgGradient="linear(to-br, #f8fafc, #e9f5ec 80%)" px={2} py={10}>
+      <Box maxW="1100px" mx="auto" bg="white" borderRadius="2xl" boxShadow="2xl" p={[4, 8]}>
+        <Heading size="lg" mb={8} color="gray.800" fontWeight="extrabold" letterSpacing="tight">
+          Your Exam History
+        </Heading>
         {exams.length === 0 ? (
-          <Text>No exams marked yet. Start by marking your first exam!</Text>
+          <VStack spacing={4} py={16}>
+            <Text fontSize="lg" color="gray.500">No exams marked yet.</Text>
+            <Text fontSize="md" color="gray.400">Start by marking your first exam!</Text>
+          </VStack>
         ) : (
-          <Table variant="simple">
-            <Thead>
-              <Tr>
-                <Th>Date</Th>
-                <Th>Student Paper</Th>
-                <Th>Scheme</Th>
-                <Th>Total Score</Th>
-                <Th>Actions</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {exams.map((exam) => (
-                <Tr key={exam.id}>
-                  <Td>{formatDate(exam.timestamp)}</Td>
-                  <Td>{exam.studentFileName}</Td>
-                  <Td>{exam.schemeFileName}</Td>
-                  <Td>
-                    <Badge colorScheme="green" fontSize="md">
-                      {exam.result.total}
-                    </Badge>
-                  </Td>
-                  <Td>
-                    <Button size="sm" onClick={() => viewExamDetails(exam)}>
-                      View Details
-                    </Button>
-                  </Td>
+          <Box overflowX="auto">
+            <Table variant="simple" size="md">
+              <Thead bg="gray.50">
+                <Tr>
+                  <Th color="gray.600" fontWeight="bold">Date</Th>
+                  <Th color="gray.600" fontWeight="bold">Student Paper</Th>
+                  <Th color="gray.600" fontWeight="bold">Scheme</Th>
+                  <Th color="gray.600" fontWeight="bold">Total Score</Th>
+                  <Th color="gray.600" fontWeight="bold">Actions</Th>
                 </Tr>
-              ))}
-            </Tbody>
-          </Table>
+              </Thead>
+              <Tbody>
+                {exams.map((exam) => (
+                  <Tr key={exam.id} _hover={{ bg: "green.50" }}>
+                    <Td fontWeight="medium">{formatDate(exam.timestamp)}</Td>
+                    <Td>{exam.studentFileName}</Td>
+                    <Td>{exam.schemeFileName}</Td>
+                    <Td>
+                      <Badge colorScheme="green" fontSize="md" px={2} py={1} borderRadius="md">
+                        {exam.result.total}
+                      </Badge>
+                    </Td>
+                    <Td>
+                      <Button size="sm" colorScheme="green" variant="outline" onClick={() => navigate(`/exam/${exam.id}`)}>
+                        View Details
+                      </Button>
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </Box>
         )}
-      </VStack>
+      </Box>
 
-      <Modal isOpen={isOpen} onClose={onClose} size="xl">
+      <Modal isOpen={isOpen} onClose={onClose} size="2xl" isCentered motionPreset="slideInBottom">
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Exam Details</ModalHeader>
+        <ModalContent borderRadius="2xl" boxShadow="2xl">
+          <ModalHeader fontWeight="bold" color="green.700" fontSize="2xl" borderBottom="1px solid #e2e8f0">
+            Exam Marking Breakdown
+          </ModalHeader>
           <ModalCloseButton />
-          <ModalBody pb={6}>
+          <ModalBody pb={6} bg="gray.50">
             {selectedExam && (
-              <VStack spacing={4} align="stretch">
+              <VStack spacing={6} align="stretch">
                 {selectedExam.result.questions.map((q, index) => (
-                  <Box key={index} p={4} borderWidth={1} borderRadius="md">
-                    <Text fontWeight="bold">Question {q.questionNumber}</Text>
-                    <Text mt={2}>{q.question}</Text>
-                    <Text mt={2}>Student Answer: {q.studentAnswer}</Text>
-                    <Text mt={2}>Marks: {q.mark}/{q.maxMarks}</Text>
-                    <Text mt={2}>Feedback: {q.comment}</Text>
+                  <Box key={index} p={5} bg="white" borderRadius="xl" boxShadow="md" border="1px solid #E2E8F0">
+                    <Text fontWeight="bold" fontSize="lg" mb={1} color="green.700">
+                      Question {q.questionNumber} <Badge colorScheme="green">{q.mark}/{q.maxMarks}</Badge>
+                    </Text>
+                    <Text fontSize="md" color="gray.700" mb={2}>
+                      <strong>Question:</strong> {q.question}
+                    </Text>
+                    <Box mb={3}>
+                      <Text fontWeight="semibold" mb={1} color="gray.600">Student Answer:</Text>
+                      <Text whiteSpace="pre-line" color="gray.800">{q.studentAnswer.trim()}</Text>
+                    </Box>
+                    <Box>
+                      <Text fontWeight="semibold" mb={1} color="gray.600">Examiner Comment:</Text>
+                      <Text whiteSpace="pre-line" color="gray.700">{q.comment}</Text>
+                    </Box>
                   </Box>
                 ))}
-                <Box p={4} borderWidth={1} borderRadius="md" bg="green.50">
-                  <Text fontWeight="bold">Total Score: {selectedExam.result.total}</Text>
+                <Box p={4} borderWidth={1} borderRadius="md" bg="green.50" textAlign="center">
+                  <Text fontWeight="bold" color="green.700" fontSize="lg">Total Score: {selectedExam.result.total}</Text>
                 </Box>
               </VStack>
             )}
