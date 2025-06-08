@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   ChakraProvider, Box, Button, Text, Heading, VStack, Icon,
-  useToast, Input, Tooltip, extendTheme, Badge, HStack, Spacer
+  useToast, Input, Tooltip, extendTheme, Badge, HStack
 } from "@chakra-ui/react";
 import { FaFilePdf, FaUpload, FaFileAlt, FaSignOutAlt } from "react-icons/fa";
 import { useUser } from "./AuthContext";
@@ -42,28 +42,31 @@ function App() {
   const user = useUser();
 
   useEffect(() => {
-    if (!user) {
-      const stored = localStorage.getItem("free-credits");
-      if (stored) setCredits(parseInt(stored));
-      else localStorage.setItem("free-credits", MAX_FREE_CREDITS.toString());
-    } else {
-      (async () => {
-        try {
+    const fetchUsage = async () => {
+      try {
+        const headers: any = {};
+        if (user) {
           const token = await getIdToken(auth.currentUser!);
-          const res = await fetch("https://ai-examiner-79zf.onrender.com/usage", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          const data = await res.json();
-          setCredits(Math.max(0, 10 - (data.credits_used || 0)));
-        } catch (err) {
-          console.error("Failed to fetch usage:", err);
+          headers["Authorization"] = `Bearer ${token}`;
         }
-      })();
-    }
+
+        const res = await fetch("https://ai-examiner-79zf.onrender.com/usage", { headers });
+        const data = await res.json();
+        const used = data.credits_used || 0;
+        const max = user ? 10 : 3;
+        setCredits(Math.max(0, max - used));
+      } catch (err) {
+        console.error("Failed to fetch usage:", err);
+        if (!user) {
+          const stored = localStorage.getItem("free-credits");
+          if (stored) setCredits(parseInt(stored));
+          else localStorage.setItem("free-credits", MAX_FREE_CREDITS.toString());
+        }
+      }
+    };
+
+    fetchUsage();
   }, [user]);
-  
 
   const decrementCredit = () => {
     if (!user) {
@@ -109,7 +112,6 @@ function App() {
       const data = await res.json();
       if (!user) decrementCredit();
       else setCredits((prev) => Math.max(0, prev - 1));
-
       setResult(data);
     } catch (err) {
       toast({
@@ -197,33 +199,24 @@ function App() {
 
   return (
     <ChakraProvider theme={theme}>
-      <Box
-        minH="100vh"
-        bgImage="url('/background.jpg')"
-        bgSize="cover"
-        bgPosition="center"
-        px={6}
-        py={4}
-      >
-        {/* Header Bar */}
+      <Box minH="100vh" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" px={6} py={4}>
         <HStack justifyContent="flex-end" mb={4}>
           {user ? (
-            <>
-              <Badge colorScheme="green" variant="subtle" fontSize="sm" px={3} py={1}>
-                {credits} credits remaining
-              </Badge>
-              <Button size="sm" leftIcon={<FaSignOutIcon />} onClick={logout}>
-                Log Out
-              </Button>
-            </>
-          ) : (
-            <Button as="a" href="/auth" size="sm" colorScheme="green" variant="outline">
-              Login / Sign Up
+            <Button size="sm" leftIcon={<FaSignOutIcon />} onClick={logout}>
+              Log Out
             </Button>
+          ) : (
+            <Box textAlign="right">
+              <Button as="a" href="/auth" size="sm" colorScheme="green" variant="outline" mb={1}>
+                Login / Sign Up
+              </Button>
+              <Text fontSize="xs" color="gray.500">
+                login for 10 free credits per month
+              </Text>
+            </Box>
           )}
         </HStack>
 
-        {/* Main Card */}
         <Box
           w="full"
           maxW="800px"
@@ -235,6 +228,21 @@ function App() {
           backdropFilter="blur(12px)"
           textAlign="center"
         >
+          <Box display="flex" justifyContent="flex-end" mb={2}>
+          <Badge
+            bg="#e6f7ec"
+            color="#2f855a"
+            fontSize="sm"
+            fontWeight="medium"
+            px={3}
+            py={1}
+            borderRadius="full"
+            boxShadow="sm"
+          >
+            {credits} credits remaining
+          </Badge>
+          </Box>
+
           <Heading size="lg" mb={2}>AI GCSE Paper Marker</Heading>
           <Text mb={6} color="gray.700" fontSize="md">
             Upload a student’s paper and a mark scheme – we’ll mark it using examiner-level accuracy.
