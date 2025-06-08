@@ -7,12 +7,13 @@ from io import BytesIO
 from base64 import b64encode
 from typing import Optional
 import firebase_admin
-from firebase_admin import credentials, auth as admin_auth
+from firebase_admin import credentials, firestore, auth as admin_auth
 import os
 import json
 
 
 app = FastAPI()
+db = firestore.client()
 
 app.add_middleware(
     CORSMiddleware,
@@ -44,13 +45,11 @@ def health():
 async def verify_firebase_token(request: Request, call_next):
     auth_header = request.headers.get("Authorization")
 
-    if not auth_header:
-        #Explicitly mark as unauthenticated
-        request.state.user = None
+    if not auth_header or not auth_header.startswith("Bearer "):
+        # Anonymous user: use IP address as fallback ID
+        client_ip = request.client.host
+        request.state.user = f"anon:{client_ip}"
         return await call_next(request)
-
-    if not auth_header.startswith("Bearer "):
-        return JSONResponse(status_code=400, content={"detail": "Invalid token format"})
 
     id_token = auth_header[len("Bearer "):]
     try:
@@ -60,6 +59,7 @@ async def verify_firebase_token(request: Request, call_next):
         return JSONResponse(status_code=401, content={"detail": "Invalid token"})
 
     return await call_next(request)
+
 
 
 
@@ -176,14 +176,21 @@ Total Marks: X/Y
 
 @app.post("/mark")
 async def mark_paper(request: Request, student: UploadFile = File(...), scheme: UploadFile = File(...)):
-    uid = request.state.user or "anonymous"
+    uid = request.state.user or f"anon:{request.client.host}"
+    max_credits = 10 if not uid.startswith("anon:") else 3
 
-    # Only enforce limit for authenticated users
-    if uid != "anonymous":
-        users_usage[uid] = users_usage.get(uid, 0) + 1
-        if users_usage[uid] > 10:
-            raise HTTPException(status_code=429, detail="Monthly limit reached")
+    doc_ref = db.collection("usage").document(uid)
+    doc = doc_ref.get()
 
+    used = doc.to_dict().get("credits_used", 0) if doc.exists else 0
+
+    if used >= max_credits:
+        raise HTTPException(status_code=429, detail="Credit limit reached")
+
+    # Increment credit usage in Firestore
+    doc_ref.set({"credits_used": used + 1}, merge=True)
+
+    # Convert PDFs
     student_bytes = await student.read()
     scheme_bytes = await scheme.read()
 
@@ -192,9 +199,14 @@ async def mark_paper(request: Request, student: UploadFile = File(...), scheme: 
 
     raw_result = mark_with_vision(student_images, scheme_images)
     parsed = parse_marking_output(raw_result)
-
-    if uid != "anonymous":
-        parsed["credits_used"] = users_usage[uid]
+    parsed["credits_used"] = used + 1
 
     return parsed
 
+@app.get("/usage")
+async def get_usage(request: Request):
+    uid = request.state.user or request.client.host
+    doc_ref = db.collection("usage").document(uid)
+    doc = doc_ref.get()
+    used = doc.to_dict().get("credits_used", 0) if doc.exists else 0
+    return {"credits_used": used}
