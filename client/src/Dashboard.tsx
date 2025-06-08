@@ -83,8 +83,19 @@ function Dashboard() {
     }
   };
 
-  const formatDate = (timestamp: { seconds: number; nanoseconds: number }) => {
-    return new Date(timestamp.seconds * 1000).toLocaleDateString();
+  const formatDate = (timestamp: any) => {
+    if (!timestamp) return "Unknown date";
+    // Firestore Timestamp object
+    if (typeof timestamp === "object" && typeof timestamp.seconds === "number") {
+      return new Date(timestamp.seconds * 1000).toLocaleString();
+    }
+    // String date
+    if (typeof timestamp === "string") {
+      const d = new Date(timestamp);
+      if (!isNaN(d.getTime())) return d.toLocaleString();
+      return timestamp; // fallback to raw string
+    }
+    return "Unknown date";
   };
 
   const viewExamDetails = (exam: ExamResult) => {
