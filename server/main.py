@@ -201,6 +201,18 @@ async def mark_paper(request: Request, student: UploadFile = File(...), scheme: 
     parsed = parse_marking_output(raw_result)
     parsed["credits_used"] = used + 1
 
+    # Save exam result to Firestore if user is logged in
+    if not uid.startswith("anon:"):
+        exam_ref = db.collection("exams").document()
+        exam_data = {
+            "userId": uid,
+            "timestamp": firestore.SERVER_TIMESTAMP,
+            "result": parsed,
+            "studentFileName": student.filename,
+            "schemeFileName": scheme.filename
+        }
+        exam_ref.set(exam_data)
+
     return parsed
 
 @app.get("/usage")
@@ -210,3 +222,14 @@ async def get_usage(request: Request):
     doc = doc_ref.get()
     used = doc.to_dict().get("credits_used", 0) if doc.exists else 0
     return {"credits_used": used}
+
+@app.get("/exams")
+async def get_user_exams(request: Request):
+    uid = request.state.user
+    if not uid or uid.startswith("anon:"):
+        raise HTTPException(status_code=401, detail="Authentication required")
+    
+    exams_ref = db.collection("exams").where("userId", "==", uid).order_by("timestamp", direction=firestore.Query.DESCENDING)
+    exams = exams_ref.get()
+    
+    return [{"id": exam.id, **exam.to_dict()} for exam in exams]

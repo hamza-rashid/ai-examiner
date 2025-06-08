@@ -3,7 +3,7 @@ import {
   ChakraProvider, Box, Button, Text, Heading, VStack, Icon,
   useToast, Input, Tooltip, extendTheme, Badge, HStack
 } from "@chakra-ui/react";
-import { FaFilePdf, FaUpload, FaFileAlt, FaSignOutAlt } from "react-icons/fa";
+import { FaFilePdf, FaUpload, FaFileAlt, FaSignOutAlt, FaHistory } from "react-icons/fa";
 import { TbChecklist } from "react-icons/tb";
 import { useUser } from "./AuthContext";
 import { getIdToken } from "firebase/auth";
@@ -22,6 +22,7 @@ const FaUploadIcon = FaUpload as any;
 const FaFilePdfIcon = FaFilePdf as any;
 const FaFileAltIcon = FaFileAlt as any;
 const FaSignOutIcon = FaSignOutAlt as any;
+const FaHistoryIcon = FaHistory as any;
 const TbChecklistIcon = TbChecklist as any;
 
 
@@ -77,7 +78,7 @@ function App() {
     if (!user && credits <= 0) {
       toast({
         title: "Login Required",
-        description: "You’ve used your 3 free credits. Please login to continue.",
+        description: "You've used your 3 free credits. Please login to continue.",
         status: "warning",
         duration: 4000,
         isClosable: true,
@@ -211,132 +212,150 @@ function App() {
 
   return (
     <ChakraProvider theme={theme}>
-      <Box minH="100vh" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" px={6} py={4}>
-        <Box textAlign="center" mt={{ base: 20, md: 85 }} mb={4}>
-        <Heading
-          fontSize={["4xl", "5xl", "5xl"]} // mobile, tablet, desktop
-          fontWeight="bold"
-          fontFamily="Inter, sans-serif"
-          display="inline-flex"
-          alignItems="center"
-          gap={2}
-        >
-          ExaminerAI <Icon as={TbChecklistIcon} boxSize={[10, 11, 12]} ml={-1} />
-        </Heading>
+      <Box minH="100vh" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" px={4}>
+        <Box maxW="1200px" mx="auto" py={8}>
+          <HStack justify="space-between" mb={8}>
+            <Heading size="lg" color="white" textShadow="2px 2px 4px rgba(0,0,0,0.5)">
+              AI GCSE Examiner
+            </Heading>
+            <HStack spacing={4}>
+              {user ? (
+                <>
+                  <Button
+                    leftIcon={<FaHistoryIcon />}
+                    colorScheme="green"
+                    variant="outline"
+                    onClick={() => window.location.href = "/dashboard"}
+                  >
+                    View History
+                  </Button>
+                  <Button
+                    leftIcon={<FaSignOutIcon />}
+                    colorScheme="red"
+                    variant="outline"
+                    onClick={logout}
+                  >
+                    Logout
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  colorScheme="green"
+                  variant="outline"
+                  onClick={() => (window.location.href = "/auth")}
+                >
+                  Login
+                </Button>
+              )}
+            </HStack>
+          </HStack>
+          <Box textAlign="center" mt={{ base: 20, md: 85 }} mb={4}>
+            <Heading
+              fontSize={["4xl", "5xl", "5xl"]} // mobile, tablet, desktop
+              fontWeight="bold"
+              fontFamily="Inter, sans-serif"
+              display="inline-flex"
+              alignItems="center"
+              gap={2}
+            >
+              ExaminerAI <Icon as={TbChecklistIcon} boxSize={[10, 11, 12]} ml={-1} />
+            </Heading>
 
-        <Text
-          fontSize={["md", "lg", "lg"]}
-          color="gray.600"
-          mt={2}
-          px={4}
-        >
-          Mark any paper, powered by examiner-trained AI.
-        </Text>
-
-        </Box>
-
-        <Box position="absolute" top={4} right={6} textAlign="right">
-          {user ? (
-            <Button size="sm" leftIcon={<FaSignOutIcon />} onClick={logout}>
-              Log Out
-            </Button>
-          ) : (
-            <>
-              <Button as="a" href="/auth" size="sm" colorScheme="green" variant="outline" mb={1}>
-                Login / Sign Up
-              </Button>
-              <Text fontSize="xs" color="gray.500">
-                login for 10 free credits per month
-              </Text>
-            </>
-          )}
-        </Box>
-
-
-        <Box
-          w="full"
-          maxW="800px"
-          mx="auto"
-          bg="white"
-          bgGradient="linear(to-b, whiteAlpha.900, whiteAlpha.700)"
-          border="1px solid #EDF2F7"
-          p={15}
-          borderRadius="2xl"
-          boxShadow="lg"
-          backdropFilter="blur(8px)"
-          textAlign="center"
-        >
-
-          <Box display="flex" justifyContent="flex-end" mb={2}>
-          <Badge
-            bg="green.50"
-            color="green.700"
-            fontSize="sm"
-            fontWeight="medium"
-            px={3}
-            py={1}
-            borderRadius="full"
-            boxShadow="base"
-          >
-            {credits} credits remaining
-          </Badge>
-
+            <Text
+              fontSize={["md", "lg", "lg"]}
+              color="gray.600"
+              mt={2}
+              px={4}
+            >
+              Mark any paper, powered by examiner-trained AI.
+            </Text>
           </Box>
 
-          <HStack spacing={4} justifyContent="center" flexWrap="wrap">
-            {renderFileInput("Student Paper", studentFile, setStudentFile, "student")}
-            {renderFileInput("Mark Scheme", schemeFile, setSchemeFile, "scheme")}
-            <Button
-              colorScheme="green"
-              size="lg"
-              onClick={handleSubmit}
-              isDisabled={!studentFile || !schemeFile || loading}
-              w="full"
-              _hover={{ bg: "green.500" }}
-              _active={{ transform: "scale(0.98)", bg: "green.600" }}
-              transition="all 0.2s"
+          <Box
+            w="full"
+            maxW="800px"
+            mx="auto"
+            bg="white"
+            bgGradient="linear(to-b, whiteAlpha.900, whiteAlpha.700)"
+            border="1px solid #EDF2F7"
+            p={15}
+            borderRadius="2xl"
+            boxShadow="lg"
+            backdropFilter="blur(8px)"
+            textAlign="center"
+          >
+
+            <Box display="flex" justifyContent="flex-end" mb={2}>
+            <Badge
+              bg="green.50"
+              color="green.700"
+              fontSize="sm"
+              fontWeight="medium"
+              px={3}
+              py={1}
+              borderRadius="full"
+              boxShadow="base"
             >
-              {loading ? "Marking..." : "Mark Paper"}
-            </Button>
+              {credits} credits remaining
+            </Badge>
 
-          </HStack>
+            </Box>
 
-          {result && (
-            <VStack spacing={6} align="stretch" mt={10}>
-              <Heading size="md" textAlign="left" mb={2}>
-                Marking Breakdown
-              </Heading>
-              {result.questions.map((q, i) => (
-                <Box
-                  key={i}
-                  bg="white"
-                  borderRadius="xl"
-                  boxShadow="lg"
-                  border="1px solid #E2E8F0"
-                  p={6}
-                  textAlign="left"
-                >
-                  <Text fontWeight="bold" fontSize="lg" mb={1}>
-                    Question {q.questionNumber} — <Badge>{q.mark}</Badge>
-                  </Text>
-                  <Text fontSize="sm" color="gray.600" mb={2}>
-                    <strong>Question:</strong> {q.question}
-                  </Text>
-                  <Box mb={3}>
-                    <Text fontWeight="semibold" mb={1}>Student Answer:</Text>
-                    <Text whiteSpace="pre-line" color="gray.800">{q.studentAnswer.trim()}</Text>
+            <HStack spacing={4} justifyContent="center" flexWrap="wrap">
+              {renderFileInput("Student Paper", studentFile, setStudentFile, "student")}
+              {renderFileInput("Mark Scheme", schemeFile, setSchemeFile, "scheme")}
+              <Button
+                colorScheme="green"
+                size="lg"
+                onClick={handleSubmit}
+                isDisabled={!studentFile || !schemeFile || loading}
+                w="full"
+                _hover={{ bg: "green.500" }}
+                _active={{ transform: "scale(0.98)", bg: "green.600" }}
+                transition="all 0.2s"
+              >
+                {loading ? "Marking..." : "Mark Paper"}
+              </Button>
+
+            </HStack>
+
+            {result && (
+              <VStack spacing={6} align="stretch" mt={10}>
+                <Heading size="md" textAlign="left" mb={2}>
+                  Marking Breakdown
+                </Heading>
+                {result.questions.map((q, i) => (
+                  <Box
+                    key={i}
+                    bg="white"
+                    borderRadius="xl"
+                    boxShadow="lg"
+                    border="1px solid #E2E8F0"
+                    p={6}
+                    textAlign="left"
+                  >
+                    <Text fontWeight="bold" fontSize="lg" mb={1}>
+                      Question {q.questionNumber} — <Badge>{q.mark}</Badge>
+                    </Text>
+                    <Text fontSize="sm" color="gray.600" mb={2}>
+                      <strong>Question:</strong> {q.question}
+                    </Text>
+                    <Box mb={3}>
+                      <Text fontWeight="semibold" mb={1}>Student Answer:</Text>
+                      <Text whiteSpace="pre-line" color="gray.800">{q.studentAnswer.trim()}</Text>
+                    </Box>
+                    <Box>
+                      <Text fontWeight="semibold" mb={1}>Examiner Comment:</Text>
+                      <Text whiteSpace="pre-line" color="gray.700">{q.comment}</Text>
+                    </Box>
                   </Box>
-                  <Box>
-                    <Text fontWeight="semibold" mb={1}>Examiner Comment:</Text>
-                    <Text whiteSpace="pre-line" color="gray.700">{q.comment}</Text>
-                  </Box>
+                ))}
+                <Box textAlign="center" fontWeight="bold" fontSize="lg" py={3} borderTop="1px solid #E2E8F0">
+                  Total Marks Awarded: {result.total}
                 </Box>
-              ))}
-              <Box textAlign="center" fontWeight="bold" fontSize="lg" py={3} borderTop="1px solid #E2E8F0">
-                Total Marks Awarded: {result.total}
-              </Box>
-            </VStack>
-          )}
+              </VStack>
+            )}
+          </Box>
         </Box>
       </Box>
     </ChakraProvider>
