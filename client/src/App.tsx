@@ -211,7 +211,6 @@ function App() {
   );
 
   return (
-    <ChakraProvider theme={theme}>
       <Box minH="100vh" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" px={6} py={4}>
         <Box textAlign="center" mt={{ base: 20, md: 85 }} mb={4}>
           <Heading
@@ -351,8 +350,7 @@ function App() {
           )}
         </Box>
       </Box>
-    </ChakraProvider>
-  );
+);
 }
 
 export default App;
