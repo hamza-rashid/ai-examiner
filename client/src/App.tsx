@@ -43,7 +43,7 @@ function App() {
   const [result, setResult] = useState<{ questions: MarkedQuestion[]; total: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const [credits, setCredits] = useState<number | null>(null);
-  const toast = useToast();
+  const toast = useToast({ position: 'top' });
   const user = useUser();
 
   const fetchUsage = async () => {
