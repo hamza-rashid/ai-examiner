@@ -166,13 +166,13 @@ function Dashboard() {
                   <Icon as={FaCalendarIcon} boxSize={4} />
                   <Text>{formatDate(exam.timestamp)}</Text>
                 </HStack>
-                <HStack spacing={2} color="gray.700" fontWeight="bold">
+                <HStack spacing={2} color="gray.700">
                   <Icon as={FaPdfIcon} color="green.400" boxSize={5} />
-                  <Text fontSize="md">{exam.studentFileName}</Text>
+                  <Text fontSize="md" fontWeight="bold">{exam.studentFileName}</Text>
                 </HStack>
-                <HStack spacing={2} color="gray.700" fontWeight="bold">
+                <HStack spacing={2} color="gray.700">
                   <Icon as={FaPdfIcon} color="green.400" boxSize={5} />
-                  <Text fontSize="md">{exam.schemeFileName}</Text>
+                  <Text fontSize="md" fontWeight="bold">{exam.schemeFileName}</Text>
                 </HStack>
                 <HStack justifyContent="space-between" alignItems="center" mt={2}>
                   <Badge colorScheme="green" px={3} py={1} borderRadius="lg" fontSize="lg" fontWeight="bold" letterSpacing="tight">

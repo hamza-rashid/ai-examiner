@@ -296,6 +296,11 @@ function App() {
               </Badge>
             )}
           </Box>
+          {user && (
+            <Text fontSize="xs" color="gray.500" textAlign="right" mb={2}>
+              Purchase more credits coming soon
+            </Text>
+          )}
 
           <HStack spacing={4} justifyContent="center" flexWrap="wrap">
             {renderFileInput("Student Paper", studentFile, setStudentFile, "student")}
@@ -319,6 +324,11 @@ function App() {
             <VStack spacing={6} align="stretch" mt={10}>
               <Heading size="md" textAlign="left" mb={2}>
                 Marking Breakdown
+                {!user && (
+                  <Text as="span" fontSize="sm" color="orange.500" ml={3} fontWeight="semibold">
+                    Login to save your marked exam!
+                  </Text>
+                )}
               </Heading>
               {result.questions.map((q, i) => (
                 <Box
