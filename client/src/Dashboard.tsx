@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import {
   Box, VStack, Heading, Text, Table, Thead, Tbody, Tr, Th, Td,
   Badge, Button, useDisclosure, Modal, ModalOverlay, ModalContent,
-  ModalHeader, ModalCloseButton, ModalBody, Spinner, useToast, Icon, HStack
+  ModalHeader, ModalCloseButton, ModalBody, Spinner, useToast, Icon, HStack, IconButton
 } from "@chakra-ui/react";
 import { FaFileAlt, FaRegCalendarAlt, FaFilePdf, FaClipboardCheck } from "react-icons/fa";
 import { useUser } from "./AuthContext";
@@ -10,6 +10,7 @@ import { getIdToken } from "firebase/auth";
 import { auth } from "./firebase";
 import { useNavigate } from "react-router-dom";
 import { extendTheme } from "@chakra-ui/react";
+import { ArrowBackIcon } from "@chakra-ui/icons";
 
 type ExamResult = {
   id: string;
@@ -75,10 +76,11 @@ function Dashboard() {
 
   const formatDate = (timestamp: any) => {
     if (typeof timestamp?.seconds === "number") {
-      return new Date(timestamp.seconds * 1000).toLocaleString();
+      const d = new Date(timestamp.seconds * 1000);
+      return d.toLocaleString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
     }
     const date = new Date(timestamp);
-    return isNaN(date.getTime()) ? "Unknown date" : date.toLocaleString();
+    return isNaN(date.getTime()) ? "Unknown date" : date.toLocaleString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
   };
 
   const viewExamDetails = (exam: ExamResult) => {
@@ -96,14 +98,27 @@ function Dashboard() {
 
   if (loading) {
     return (
-      <Box minH="100vh" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" display="flex" alignItems="center" justifyContent="center">
-        <Spinner size="xl" />
+      <Box minH="100vh" w="100vw" fontFamily="Inter, sans-serif" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" display="flex" flexDirection="column" alignItems="center" justifyContent="center">
+        <Spinner size="xl" color="green.500" thickness="4px" />
       </Box>
     );
   }
 
   return (
     <Box minH="100vh" w="100vw" fontFamily="Inter, sans-serif" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" display="flex" flexDirection="column" alignItems="center" justifyContent="flex-start" px={2} py={0}>
+      <IconButton
+        icon={<ArrowBackIcon />}
+        aria-label="Back"
+        position="absolute"
+        top={6}
+        left={6}
+        variant="ghost"
+        colorScheme="green"
+        size="lg"
+        fontSize="2xl"
+        onClick={() => navigate("/")}
+        zIndex={10}
+      />
       <Box w="full" maxW="540px" mt={[8, 16]} mb={8} px={[2, 0]}>
         <Heading fontSize={["2xl", "3xl"]} fontWeight="extrabold" mb={8} color="gray.800" textAlign="left" letterSpacing="tight">
           <Icon as={FaFileAltIcon} boxSize={7} color="green.500" mb={-1} mr={2} />
@@ -144,12 +159,12 @@ function Dashboard() {
                   <Icon as={FaCalendarIcon} boxSize={4} />
                   <Text>{formatDate(exam.timestamp)}</Text>
                 </HStack>
-                <HStack spacing={2} color="gray.700" fontWeight="medium">
+                <HStack spacing={2} color="gray.700" fontWeight="bold">
                   <Icon as={FaPdfIcon} color="green.400" boxSize={5} />
                   <Text fontSize="md">{exam.studentFileName}</Text>
                 </HStack>
-                <HStack spacing={2} color="gray.600">
-                  <Icon as={FaCheckIcon} color="green.400" boxSize={5} />
+                <HStack spacing={2} color="gray.700" fontWeight="bold">
+                  <Icon as={FaPdfIcon} color="green.400" boxSize={5} />
                   <Text fontSize="md">{exam.schemeFileName}</Text>
                 </HStack>
                 <HStack justifyContent="space-between" alignItems="center" mt={2}>

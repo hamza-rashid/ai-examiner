@@ -18,11 +18,12 @@ import { useUser } from "./AuthContext";
 function formatDate(timestamp: any) {
   if (!timestamp) return "Unknown date";
   if (typeof timestamp === "object" && typeof timestamp.seconds === "number") {
-    return new Date(timestamp.seconds * 1000).toLocaleString();
+    const d = new Date(timestamp.seconds * 1000);
+    return d.toLocaleString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
   }
   if (typeof timestamp === "string") {
     const d = new Date(timestamp);
-    if (!isNaN(d.getTime())) return d.toLocaleString();
+    if (!isNaN(d.getTime())) return d.toLocaleString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
     return timestamp;
   }
   return "Unknown date";
@@ -113,7 +114,7 @@ const ExamPage = () => {
           {exam.result.questions.map((q: any, index: number) => (
             <Box key={index} p={5} bg="gray.50" borderRadius="xl" boxShadow="md" border="1px solid #E2E8F0">
               <Text fontWeight="bold" fontSize="lg" mb={1} color="green.700">
-                Question {q.questionNumber} <Badge colorScheme="green">{q.mark}/{q.maxMarks}</Badge>
+                Question {q.questionNumber} <Badge colorScheme="green">{(() => { const parts = q.mark.split('/'); return parts.length >= 2 ? `${parts[0]}/${parts[1]}` : q.mark; })()}</Badge>
               </Text>
               <Text fontSize="md" color="gray.700" mb={2}>
                 <strong>Question:</strong> {q.question}
