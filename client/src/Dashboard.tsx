@@ -102,7 +102,7 @@ function Dashboard() {
         backdropFilter="blur(8px)"
       >
         <Heading fontSize="2xl" fontWeight="bold" mb={6} display="flex" alignItems="center" gap={2}>
-          <Icon as={FaFileAlt} /> Your Marked Papers
+          <FaFileAlt /> Your Marked Papers
         </Heading>
 
         {error && (
