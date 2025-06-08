@@ -75,7 +75,7 @@ function App() {
 
   const handleSubmit = async () => {
     if (!studentFile || !schemeFile) return;
-    if (!user && credits <= 0) {
+    if (!user && (credits === null || credits <= 0)) {
       toast({
         title: "Login Required",
         description: "You've used your 3 free credits. Please login to continue.",
