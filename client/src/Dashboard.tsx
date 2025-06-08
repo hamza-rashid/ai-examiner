@@ -88,9 +88,16 @@ function Dashboard() {
     onOpen();
   };
 
-  if (!user) {
+  if (user === undefined) {
     return (
-      <Box minH="100vh" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" display="flex" alignItems="center" justifyContent="center">
+      <Box minH="100vh" w="100vw" fontFamily="Inter, sans-serif" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" display="flex" flexDirection="column" alignItems="center" justifyContent="center">
+        <Spinner size="xl" color="green.500" thickness="4px" />
+      </Box>
+    );
+  }
+  if (user === null) {
+    return (
+      <Box minH="100vh" w="100vw" fontFamily="Inter, sans-serif" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" display="flex" flexDirection="column" alignItems="center" justifyContent="center">
         <Heading size="lg">Please log in to view your marked papers</Heading>
       </Box>
     );

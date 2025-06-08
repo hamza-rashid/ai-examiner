@@ -235,7 +235,7 @@ function App() {
         </Box>
 
         <Box position="absolute" top={4} right={6} textAlign="right">
-          {user ? (
+          {user === undefined ? null : user ? (
             <>
               <Button
                 leftIcon={<FaHistoryIcon />}
