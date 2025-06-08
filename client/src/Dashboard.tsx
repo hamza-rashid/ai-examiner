@@ -53,13 +53,17 @@ function Dashboard() {
   const toast = useToast();
   const user = useUser();
   const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (user === undefined) return; // Wait for auth
     if (!user) return;
     fetchExams();
   }, [user]);
 
   const fetchExams = async () => {
+    setError(null);
+    setLoading(true);
     try {
       const token = await getIdToken(auth.currentUser!);
       const response = await fetch("https://ai-examiner-79zf.onrender.com/exams", {
@@ -67,19 +71,11 @@ function Dashboard() {
           Authorization: `Bearer ${token}`,
         },
       });
-      
       if (!response.ok) throw new Error("Failed to fetch exams");
-      
       const data = await response.json();
       setExams(data);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to load exam history",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-      });
+      setError("Failed to load exam history. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -118,8 +114,19 @@ function Dashboard() {
 
   if (loading) {
     return (
-      <Box p={8} textAlign="center">
+      <Box minH="100vh" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" display="flex" alignItems="center" justifyContent="center">
         <Spinner size="xl" />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box minH="100vh" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" display="flex" alignItems="center" justifyContent="center">
+        <VStack spacing={4}>
+          <Text fontSize="lg" color="red.500">{error}</Text>
+          <Button colorScheme="green" onClick={fetchExams}>Retry</Button>
+        </VStack>
       </Box>
     );
   }

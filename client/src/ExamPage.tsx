@@ -13,6 +13,7 @@ import {
 } from "@chakra-ui/react";
 import { getIdToken } from "firebase/auth";
 import { auth } from "./firebase";
+import { useUser } from "./AuthContext";
 
 function formatDate(timestamp: any) {
   if (!timestamp) return "Unknown date";
@@ -31,38 +32,52 @@ const ExamPage = () => {
   const { id } = useParams();
   const [exam, setExam] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const toast = useToast();
   const navigate = useNavigate();
+  const user = useUser();
 
   useEffect(() => {
-    const fetchExam = async () => {
-      try {
-        const token = await getIdToken(auth.currentUser!);
-        const res = await fetch(`https://ai-examiner-79zf.onrender.com/exams`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        const found = data.find((e: any) => e.id === id);
-        setExam(found);
-      } catch (err) {
-        toast({
-          title: "Error",
-          description: "Failed to load exam.",
-          status: "error",
-          duration: 4000,
-          isClosable: true,
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (user === undefined) return; // Wait for auth
+    if (!user) return;
     fetchExam();
-  }, [id, toast]);
+    // eslint-disable-next-line
+  }, [id, user]);
+
+  const fetchExam = async () => {
+    setError(null);
+    setLoading(true);
+    try {
+      const token = await getIdToken(auth.currentUser!);
+      const res = await fetch(`https://ai-examiner-79zf.onrender.com/exams`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Failed to fetch exam");
+      const data = await res.json();
+      const found = data.find((e: any) => e.id === id);
+      setExam(found);
+    } catch (err) {
+      setError("Failed to load exam. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (loading) {
     return (
-      <Box minH="100vh" display="flex" alignItems="center" justifyContent="center">
+      <Box minH="100vh" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" display="flex" alignItems="center" justifyContent="center">
         <Spinner size="xl" />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box minH="100vh" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" display="flex" alignItems="center" justifyContent="center">
+        <VStack spacing={4}>
+          <Text fontSize="lg" color="red.500">{error}</Text>
+          <Button colorScheme="green" onClick={fetchExam}>Retry</Button>
+        </VStack>
       </Box>
     );
   }

@@ -70,7 +70,7 @@ function App() {
   };
 
   useEffect(() => {
-    fetchUsage();
+    if (user !== undefined) fetchUsage();
   }, [user]);
 
   const handleSubmit = async () => {
