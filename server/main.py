@@ -229,7 +229,12 @@ async def get_user_exams(request: Request):
     if not uid or uid.startswith("anon:"):
         raise HTTPException(status_code=401, detail="Authentication required")
     
-    exams_ref = db.collection("exams").where("userId", "==", uid).order_by("timestamp", direction=firestore.Query.DESCENDING)
+    # Modified query to work without composite index
+    exams_ref = db.collection("exams").where("userId", "==", uid)
     exams = exams_ref.get()
     
-    return [{"id": exam.id, **exam.to_dict()} for exam in exams]
+    # Sort the results in Python instead of Firestore
+    exam_list = [{"id": exam.id, **exam.to_dict()} for exam in exams]
+    exam_list.sort(key=lambda x: x.get("timestamp", {}).get("seconds", 0), reverse=True)
+    
+    return exam_list
