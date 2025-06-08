@@ -279,18 +279,22 @@ function App() {
         >
 
           <Box display="flex" justifyContent="flex-end" mb={2}>
-            <Badge
-              bg="green.50"
-              color="green.700"
-              fontSize="sm"
-              fontWeight="medium"
-              px={3}
-              py={1}
-              borderRadius="full"
-              boxShadow="base"
-            >
-              {credits === null ? <Spinner size="xs" color="green.700" /> : `${credits} credits remaining`}
-            </Badge>
+            {credits === null ? (
+              <Spinner size="xs" color="green.700" />
+            ) : (
+              <Badge
+                bg="green.50"
+                color="green.700"
+                fontSize="sm"
+                fontWeight="medium"
+                px={3}
+                py={1}
+                borderRadius="full"
+                boxShadow="base"
+              >
+                {`${credits} credits remaining`}
+              </Badge>
+            )}
           </Box>
 
           <HStack spacing={4} justifyContent="center" flexWrap="wrap">
