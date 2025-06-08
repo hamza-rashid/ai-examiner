@@ -177,18 +177,24 @@ Total Marks: X/Y
 @app.post("/mark")
 async def mark_paper(request: Request, student: UploadFile = File(...), scheme: UploadFile = File(...)):
     uid = request.state.user or f"anon:{request.client.host}"
+    print(f"[MARK] UID: {uid}")
     max_credits = 10 if not uid.startswith("anon:") else 3
 
     doc_ref = db.collection("usage").document(uid)
     doc = doc_ref.get()
 
     used = doc.to_dict().get("credits_used", 0) if doc.exists else 0
+    print(f"[MARK] Used: {used}")
+
 
     if used >= max_credits:
         raise HTTPException(status_code=429, detail="Credit limit reached")
-
+    
+    print(f"[MARK] Updating Firestore usage...")
     # Increment credit usage in Firestore
     doc_ref.set({"credits_used": used + 1}, merge=True)
+    print(f"[MARK] Updated to {used + 1}")
+
 
     # Convert PDFs
     student_bytes = await student.read()
