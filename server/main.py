@@ -13,7 +13,6 @@ import json
 
 
 app = FastAPI()
-db = firestore.client()
 
 app.add_middleware(
     CORSMiddleware,
@@ -33,6 +32,7 @@ cred = credentials.Certificate(firebase_config)
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred)
 
+db = firestore.client()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 users_usage = {}
