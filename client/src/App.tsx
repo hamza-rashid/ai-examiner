@@ -4,10 +4,12 @@ import {
   useToast, Input, Tooltip, extendTheme, Badge, HStack
 } from "@chakra-ui/react";
 import { FaFilePdf, FaUpload, FaFileAlt, FaSignOutAlt } from "react-icons/fa";
+import { TbChecklist } from "react-icons/tb";
 import { useUser } from "./AuthContext";
 import { getIdToken } from "firebase/auth";
 import { auth } from "./firebase";
 import { logout } from "./authHelpers";
+import PDFPreview from "./PDFPreview";
 
 const theme = extendTheme({
   fonts: {
@@ -20,6 +22,8 @@ const FaUploadIcon = FaUpload as any;
 const FaFilePdfIcon = FaFilePdf as any;
 const FaFileAltIcon = FaFileAlt as any;
 const FaSignOutIcon = FaSignOutAlt as any;
+const TbChecklistIcon = TbChecklist as any;
+
 
 const MAX_FREE_CREDITS = 3;
 
@@ -158,16 +162,20 @@ function App() {
     type: "student" | "scheme"
   ) => (
     <Box
-      border="2px dashed #CBD5E0"
-      p={4}
+      border="2px dashed"
+      borderColor="#CBD5E0"
+      p={5}
+      mt={3}
       borderRadius="lg"
       textAlign="center"
       bg="whiteAlpha.300"
       backdropFilter="blur(10px)"
       cursor="pointer"
       as="label"
+      _hover={{ bg: "gray.50", borderColor: "gray.400" }}
       transition="0.2s"
     >
+
       <VStack spacing={2}>
         <Icon as={file ? FaFilePdfIcon : FaUploadIcon} boxSize={6} color={file ? "red.500" : "gray.500"} />
         <Text fontSize="sm" color="gray.700">
@@ -179,20 +187,30 @@ function App() {
           display="none"
           onChange={(e) => onChange(e.target.files?.[0] || null)}
         />
-        <Tooltip label={`Load ${label} Example`} hasArrow>
-          <Button
-            size="sm"
-            variant="outline"
-            colorScheme="gray"
-            onClick={(e) => {
-              e.preventDefault();
-              handleExampleFileLoad(type);
-            }}
-            leftIcon={<FaFileAltIcon />}
-          >
-            Test Example PDF
-          </Button>
+        <Tooltip label={`Load ${label} Example`} hasArrow isDisabled={!!file}>
+          <Box>
+            {!file && (
+              <Button
+                size="sm"
+                variant="outline"
+                colorScheme="gray"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleExampleFileLoad(type);
+                }}
+                leftIcon={<FaFileAltIcon />}
+              >
+                Test Example PDF
+              </Button>
+            )}
+          </Box>
         </Tooltip>
+
+        {/* PDF Preview */}
+        {file && (
+          <PDFPreview file={file} />
+        )}
+
       </VStack>
     </Box>
   );
@@ -200,55 +218,78 @@ function App() {
   return (
     <ChakraProvider theme={theme}>
       <Box minH="100vh" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" px={6} py={4}>
-        <HStack justifyContent="flex-end" mb={4}>
+        <Box textAlign="center" mt={{ base: 20, md: 40 }} mb={4}>
+        <Heading
+          fontSize={["4xl", "5xl", "5xl"]} // mobile, tablet, desktop
+          fontWeight="bold"
+          fontFamily="Inter, sans-serif"
+          display="inline-flex"
+          alignItems="center"
+          gap={2}
+        >
+          ExaminerAI <Icon as={TbChecklistIcon} boxSize={[10, 11, 12]} ml={-1} />
+        </Heading>
+
+        <Text
+          fontSize={["md", "lg", "lg"]}
+          color="gray.600"
+          mt={2}
+          px={4}
+        >
+          Mark any paper, powered by examiner-trained AI.
+        </Text>
+
+        </Box>
+
+        <Box position="absolute" top={4} right={6} textAlign="right">
           {user ? (
             <Button size="sm" leftIcon={<FaSignOutIcon />} onClick={logout}>
               Log Out
             </Button>
           ) : (
-            <Box textAlign="right">
+            <>
               <Button as="a" href="/auth" size="sm" colorScheme="green" variant="outline" mb={1}>
                 Login / Sign Up
               </Button>
               <Text fontSize="xs" color="gray.500">
                 login for 10 free credits per month
               </Text>
-            </Box>
+            </>
           )}
-        </HStack>
+        </Box>
+
 
         <Box
           w="full"
           maxW="800px"
           mx="auto"
-          bg="rgba(255,255,255,0.85)"
-          p={8}
+          bg="white"
+          bgGradient="linear(to-b, whiteAlpha.900, whiteAlpha.700)"
+          border="1px solid #EDF2F7"
+          p={15}
           borderRadius="2xl"
-          boxShadow="2xl"
-          backdropFilter="blur(12px)"
+          boxShadow="lg"
+          backdropFilter="blur(8px)"
           textAlign="center"
         >
+
           <Box display="flex" justifyContent="flex-end" mb={2}>
           <Badge
-            bg="#e6f7ec"
-            color="#2f855a"
+            bg="green.50"
+            color="green.700"
             fontSize="sm"
             fontWeight="medium"
             px={3}
             py={1}
             borderRadius="full"
-            boxShadow="sm"
+            boxShadow="base"
           >
             {credits} credits remaining
           </Badge>
+
           </Box>
 
-          <Heading size="lg" mb={2}>AI GCSE Paper Marker</Heading>
-          <Text mb={6} color="gray.700" fontSize="md">
-            Upload a student’s paper and a mark scheme – we’ll mark it using examiner-level accuracy.
-          </Text>
-
-          <VStack spacing={4}>
+          <HStack spacing={4} justifyContent="center" flexWrap="wrap">
             {renderFileInput("Student Paper", studentFile, setStudentFile, "student")}
             {renderFileInput("Mark Scheme", schemeFile, setSchemeFile, "scheme")}
             <Button
@@ -257,10 +298,14 @@ function App() {
               onClick={handleSubmit}
               isDisabled={!studentFile || !schemeFile || loading}
               w="full"
+              _hover={{ bg: "green.500" }}
+              _active={{ transform: "scale(0.98)", bg: "green.600" }}
+              transition="all 0.2s"
             >
               {loading ? "Marking..." : "Mark Paper"}
             </Button>
-          </VStack>
+
+          </HStack>
 
           {result && (
             <VStack spacing={6} align="stretch" mt={10}>
