@@ -45,30 +45,30 @@ function App() {
   const toast = useToast();
   const user = useUser();
 
-  useEffect(() => {
-    const fetchUsage = async () => {
-      try {
-        const headers: any = {};
-        if (user) {
-          const token = await getIdToken(auth.currentUser!);
-          headers["Authorization"] = `Bearer ${token}`;
-        }
-
-        const res = await fetch("https://ai-examiner-79zf.onrender.com/usage", { headers });
-        const data = await res.json();
-        const used = data.credits_used || 0;
-        const max = user ? 10 : 3;
-        setCredits(Math.max(0, max - used));
-      } catch (err) {
-        console.error("Failed to fetch usage:", err);
-        if (!user) {
-          const stored = localStorage.getItem("free-credits");
-          if (stored) setCredits(parseInt(stored));
-          else localStorage.setItem("free-credits", MAX_FREE_CREDITS.toString());
-        }
+  const fetchUsage = async () => {
+    try {
+      const headers: any = {};
+      if (user) {
+        const token = await getIdToken(auth.currentUser!);
+        headers["Authorization"] = `Bearer ${token}`;
       }
-    };
 
+      const res = await fetch("https://ai-examiner-79zf.onrender.com/usage", { headers });
+      const data = await res.json();
+      const used = data.credits_used || 0;
+      const max = user ? 10 : 3;
+      setCredits(Math.max(0, max - used));
+    } catch (err) {
+      console.error("Failed to fetch usage:", err);
+      if (!user) {
+        const stored = localStorage.getItem("free-credits");
+        if (stored) setCredits(parseInt(stored));
+        else localStorage.setItem("free-credits", MAX_FREE_CREDITS.toString());
+      }
+    }
+  };
+
+  useEffect(() => {
     fetchUsage();
   }, [user]);
 
@@ -77,7 +77,7 @@ function App() {
     if (!user && credits <= 0) {
       toast({
         title: "Login Required",
-        description: "You’ve used your 3 free marks. Please login to continue.",
+        description: "You’ve used your 3 free credits. Please login to continue.",
         status: "warning",
         duration: 4000,
         isClosable: true,
@@ -107,7 +107,11 @@ function App() {
 
       const data = await res.json();
       setResult(data);
-    } catch (err) {
+
+      //Re-fetch updated credits from backend
+      await fetchUsage();
+
+    }catch (err) {
       toast({
         title: "Error",
         description: "Something went wrong while marking the paper.",
