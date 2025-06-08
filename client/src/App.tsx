@@ -72,14 +72,6 @@ function App() {
     fetchUsage();
   }, [user]);
 
-  const decrementCredit = () => {
-    if (!user) {
-      const newCredits = credits - 1;
-      setCredits(newCredits);
-      localStorage.setItem("free-credits", newCredits.toString());
-    }
-  };
-
   const handleSubmit = async () => {
     if (!studentFile || !schemeFile) return;
     if (!user && credits <= 0) {
@@ -114,8 +106,6 @@ function App() {
       });
 
       const data = await res.json();
-      if (!user) decrementCredit();
-      else setCredits((prev) => Math.max(0, prev - 1));
       setResult(data);
     } catch (err) {
       toast({
