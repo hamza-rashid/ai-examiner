@@ -117,16 +117,16 @@ function Dashboard() {
         icon={<ArrowBackIcon />}
         aria-label="Back"
         position="absolute"
-        top={6}
-        left={6}
+        top={[3, 6]}
+        left={[3, 6]}
         variant="ghost"
         colorScheme="green"
-        size="lg"
-        fontSize="2xl"
+        size={["md", "lg"]}
+        fontSize={["xl", "2xl"]}
         onClick={() => navigate("/")}
         zIndex={10}
       />
-      <Box w="full" maxW="540px" mt={[8, 16]} mb={8} px={[2, 0]}>
+      <Box w="full" maxW="540px" mt={[20, 16]} mb={8} px={[2, 0]}>
         <Heading fontSize={["2xl", "3xl"]} fontWeight="extrabold" mb={8} color="gray.800" textAlign="left" letterSpacing="tight">
           <Icon as={FaFileAltIcon} boxSize={7} color="green.500" mb={-1} mr={2} />
           Your Marked Papers
@@ -168,11 +168,11 @@ function Dashboard() {
                 </HStack>
                 <HStack spacing={2} color="gray.700">
                   <Icon as={FaPdfIcon} color="green.400" boxSize={5} />
-                  <Text fontSize="md" fontWeight="bold">{exam.studentFileName}</Text>
+                  <Text fontSize="md">{exam.studentFileName}</Text>
                 </HStack>
                 <HStack spacing={2} color="gray.700">
                   <Icon as={FaPdfIcon} color="green.400" boxSize={5} />
-                  <Text fontSize="md" fontWeight="bold">{exam.schemeFileName}</Text>
+                  <Text fontSize="md">{exam.schemeFileName}</Text>
                 </HStack>
                 <HStack justifyContent="space-between" alignItems="center" mt={2}>
                   <Badge colorScheme="green" px={3} py={1} borderRadius="lg" fontSize="lg" fontWeight="bold" letterSpacing="tight">

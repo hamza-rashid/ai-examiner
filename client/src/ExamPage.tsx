@@ -97,9 +97,25 @@ const ExamPage = () => {
   return (
     <Box minH="100vh" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" px={2} py={10}>
       <Box maxW="900px" mx="auto" bg="white" borderRadius="2xl" boxShadow="2xl" p={[4, 8]}>
-        <HStack justifyContent="space-between" mb={6}>
-          <Heading size="lg" color="green.700" fontWeight="extrabold">Exam Marking Breakdown</Heading>
-          <Button variant="outline" colorScheme="green" onClick={() => navigate("/dashboard")}>Back to Dashboard</Button>
+        <HStack
+          justifyContent="space-between"
+          mb={6}
+          flexDirection={{ base: "column", md: "row" }}
+          alignItems={{ base: "stretch", md: "center" }}
+        >
+          <Button
+            variant="outline"
+            colorScheme="green"
+            onClick={() => navigate("/dashboard")}
+            w={{ base: "100%", md: "auto" }}
+            fontSize={{ base: "md", md: "lg" }}
+            mb={{ base: 3, md: 0 }}
+          >
+            Back to Dashboard
+          </Button>
+          <Heading size="lg" color="green.700" fontWeight="extrabold" textAlign={{ base: "left", md: "inherit" }}>
+            Exam Marking Breakdown
+          </Heading>
         </HStack>
         <Text color="gray.500" mb={2}>
           <strong>Date:</strong> {formatDate(exam.timestamp)}
