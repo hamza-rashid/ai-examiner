@@ -38,6 +38,8 @@ function Dashboard() {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
 
+  const FaFileAltIcon = FaFileAlt as any;
+
   useEffect(() => {
     if (user !== undefined && user) fetchExams();
   }, [user]);
@@ -102,7 +104,7 @@ function Dashboard() {
         backdropFilter="blur(8px)"
       >
         <Heading fontSize="2xl" fontWeight="bold" mb={6} display="flex" alignItems="center" gap={2}>
-          <FaFileAlt /> Your Marked Papers
+          <Icon as={FaFileAltIcon} boxSize={6} mr={2} /> Your Marked Papers
         </Heading>
 
         {error && (
