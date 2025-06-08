@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
   ChakraProvider, Box, Button, Text, Heading, VStack, Icon,
-  useToast, Input, Tooltip, extendTheme, Badge, HStack
+  useToast, Input, Tooltip, extendTheme, Badge, HStack, Spinner
 } from "@chakra-ui/react";
 import { FaFilePdf, FaUpload, FaFileAlt, FaSignOutAlt, FaHistory } from "react-icons/fa";
 import { TbChecklist } from "react-icons/tb";
@@ -42,7 +42,7 @@ function App() {
   const [schemeFile, setSchemeFile] = useState<File | null>(null);
   const [result, setResult] = useState<{ questions: MarkedQuestion[]; total: string } | null>(null);
   const [loading, setLoading] = useState(false);
-  const [credits, setCredits] = useState<number>(MAX_FREE_CREDITS);
+  const [credits, setCredits] = useState<number | null>(null);
   const toast = useToast();
   const user = useUser();
 
@@ -279,19 +279,18 @@ function App() {
         >
 
           <Box display="flex" justifyContent="flex-end" mb={2}>
-          <Badge
-            bg="green.50"
-            color="green.700"
-            fontSize="sm"
-            fontWeight="medium"
-            px={3}
-            py={1}
-            borderRadius="full"
-            boxShadow="base"
-          >
-            {credits} credits remaining
-          </Badge>
-
+            <Badge
+              bg="green.50"
+              color="green.700"
+              fontSize="sm"
+              fontWeight="medium"
+              px={3}
+              py={1}
+              borderRadius="full"
+              boxShadow="base"
+            >
+              {credits === null ? <Spinner size="xs" color="green.700" /> : `${credits} credits remaining`}
+            </Badge>
           </Box>
 
           <HStack spacing={4} justifyContent="center" flexWrap="wrap">
