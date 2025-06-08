@@ -125,7 +125,7 @@ function Dashboard() {
   }
 
   return (
-    <Box minH="100vh" bgGradient="linear(to-br, #f8fafc, #e9f5ec 80%)" px={2} py={10}>
+    <Box minH="100vh" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" px={2} py={10}>
       <Box maxW="1100px" mx="auto" bg="white" borderRadius="2xl" boxShadow="2xl" p={[4, 8]}>
         <Heading size="lg" mb={8} color="gray.800" fontWeight="extrabold" letterSpacing="tight">
           Your Exam History
