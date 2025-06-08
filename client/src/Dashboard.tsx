@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import {
   Box, VStack, Heading, Text, Table, Thead, Tbody, Tr, Th, Td,
-  Badge, Button, Modal, ModalOverlay, ModalContent, ModalHeader,
-  ModalBody, ModalCloseButton, useDisclosure, useToast, Spinner
+  Badge, Button, useDisclosure, Modal, ModalOverlay, ModalContent,
+  ModalHeader, ModalCloseButton, ModalBody, Spinner, useToast, Icon
 } from "@chakra-ui/react";
+import { FaFileAlt } from "react-icons/fa";
 import { useUser } from "./AuthContext";
 import { getIdToken } from "firebase/auth";
 import { auth } from "./firebase";
@@ -38,8 +39,7 @@ function Dashboard() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user === undefined || !user) return;
-    fetchExams();
+    if (user !== undefined && user) fetchExams();
   }, [user]);
 
   const fetchExams = async () => {
@@ -54,7 +54,7 @@ function Dashboard() {
       const data = await res.json();
       setExams(data);
     } catch {
-      setError("Something went wrong loading your results.");
+      setError("Something went wrong. Try again later.");
     } finally {
       setLoading(false);
     }
@@ -75,18 +75,15 @@ function Dashboard() {
 
   if (!user) {
     return (
-      <Box textAlign="center" py={20} bgImage="url('/background.jpg')" bgSize="cover">
-        <Heading size="lg">Please log in to view your results</Heading>
-        <Button mt={4} colorScheme="green" onClick={() => window.location.href = "/auth"}>
-          Log In
-        </Button>
+      <Box minH="100vh" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" display="flex" alignItems="center" justifyContent="center">
+        <Heading size="lg">Please log in to view your marked papers</Heading>
       </Box>
     );
   }
 
   if (loading) {
     return (
-      <Box minH="100vh" display="flex" alignItems="center" justifyContent="center" bgImage="url('/background.jpg')" bgSize="cover">
+      <Box minH="100vh" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" display="flex" alignItems="center" justifyContent="center">
         <Spinner size="xl" />
       </Box>
     );
@@ -94,13 +91,22 @@ function Dashboard() {
 
   return (
     <Box minH="100vh" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" py={12} px={4}>
-      <Box maxW="1100px" mx="auto" bg="white" boxShadow="xl" rounded="2xl" p={[4, 8]}>
-        <Heading fontSize="2xl" fontWeight="extrabold" mb={6} color="gray.800">
-          📄 Your Marked Papers
+      <Box
+        maxW="1100px"
+        mx="auto"
+        bg="white"
+        borderRadius="2xl"
+        p={[6, 10]}
+        border="1px solid #EDF2F7"
+        boxShadow="lg"
+        backdropFilter="blur(8px)"
+      >
+        <Heading fontSize="2xl" fontWeight="bold" mb={6} display="flex" alignItems="center" gap={2}>
+          <Icon as={FaFileAlt} /> Your Marked Papers
         </Heading>
 
         {error && (
-          <VStack spacing={3}>
+          <VStack spacing={3} mb={6}>
             <Text color="red.500">{error}</Text>
             <Button colorScheme="green" onClick={fetchExams}>Retry</Button>
           </VStack>
@@ -108,14 +114,14 @@ function Dashboard() {
 
         {exams.length === 0 ? (
           <VStack spacing={3} py={10}>
-            <Text fontSize="lg" color="gray.600">No papers marked yet.</Text>
-            <Text fontSize="sm" color="gray.400">Upload a paper to get started.</Text>
+            <Text fontSize="lg" color="gray.600">No marked papers yet.</Text>
+            <Text fontSize="sm" color="gray.400">Go back and mark your first paper.</Text>
           </VStack>
         ) : (
           <Box overflowX="auto">
             <Table variant="simple" size="md">
-              <Thead>
-                <Tr bg="gray.50">
+              <Thead bg="gray.50">
+                <Tr>
                   <Th fontWeight="bold">Date</Th>
                   <Th fontWeight="bold">Student Paper</Th>
                   <Th fontWeight="bold">Scheme</Th>
@@ -130,7 +136,7 @@ function Dashboard() {
                     <Td>{exam.studentFileName}</Td>
                     <Td>{exam.schemeFileName}</Td>
                     <Td>
-                      <Badge colorScheme="green" fontSize="md" px={2} py={1} borderRadius="lg">
+                      <Badge colorScheme="green" px={2} py={1} borderRadius="lg">
                         {exam.result.total}
                       </Badge>
                     </Td>
@@ -138,7 +144,6 @@ function Dashboard() {
                       <Button
                         size="sm"
                         colorScheme="green"
-                        variant="solid"
                         onClick={() => navigate(`/exam/${exam.id}`)}
                       >
                         View
@@ -154,26 +159,24 @@ function Dashboard() {
 
       <Modal isOpen={isOpen} onClose={onClose} size="2xl" isCentered>
         <ModalOverlay />
-        <ModalContent rounded="2xl" overflow="hidden">
-          <ModalHeader bg="green.100" color="green.800" fontWeight="bold" fontSize="xl">
+        <ModalContent borderRadius="2xl" overflow="hidden">
+          <ModalHeader bg="green.100" color="green.700" fontWeight="bold">
             Breakdown of Results
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody bg="gray.50" px={6} py={4}>
             {selectedExam?.result.questions.map((q, i) => (
-              <Box key={i} p={4} bg="white" rounded="lg" shadow="md" mb={4}>
-                <Text fontWeight="bold" color="green.700" mb={2}>
+              <Box key={i} bg="white" p={4} borderRadius="lg" shadow="md" mb={4}>
+                <Text fontWeight="bold" color="green.700">
                   Question {q.questionNumber} <Badge colorScheme="green">{q.mark}/{q.maxMarks}</Badge>
                 </Text>
-                <Text fontSize="sm" mb={1}><strong>Q:</strong> {q.question}</Text>
-                <Text fontSize="sm" mb={1} color="gray.700"><strong>Answer:</strong> {q.studentAnswer}</Text>
-                <Text fontSize="sm" color="gray.600"><strong>Comment:</strong> {q.comment}</Text>
+                <Text mt={2} fontSize="sm"><strong>Q:</strong> {q.question}</Text>
+                <Text mt={1} fontSize="sm" color="gray.700"><strong>Answer:</strong> {q.studentAnswer}</Text>
+                <Text mt={1} fontSize="sm" color="gray.600"><strong>Comment:</strong> {q.comment}</Text>
               </Box>
             ))}
-            <Box textAlign="center" mt={6}>
-              <Text fontWeight="bold" fontSize="lg" color="green.600">
-                Total: {selectedExam?.result.total}
-              </Text>
+            <Box textAlign="center" mt={4} fontWeight="bold" fontSize="lg" color="green.700">
+              Total Score: {selectedExam?.result.total}
             </Box>
           </ModalBody>
         </ModalContent>
