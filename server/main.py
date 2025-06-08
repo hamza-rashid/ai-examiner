@@ -10,6 +10,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore, auth as admin_auth
 import os
 import json
+from dateutil.parser import parse
 
 
 app = FastAPI()
@@ -229,12 +230,24 @@ async def get_user_exams(request: Request):
     if not uid or uid.startswith("anon:"):
         raise HTTPException(status_code=401, detail="Authentication required")
     
-    # Modified query to work without composite index
     exams_ref = db.collection("exams").where("userId", "==", uid)
     exams = exams_ref.get()
     
-    # Sort the results in Python instead of Firestore
     exam_list = [{"id": exam.id, **exam.to_dict()} for exam in exams]
-    exam_list.sort(key=lambda x: x.get("timestamp", {}).get("seconds", 0), reverse=True)
+
+    def get_timestamp_seconds(ts):
+        # Firestore timestamp object
+        if hasattr(ts, 'timestamp'):
+            return ts.timestamp()
+        # Dict with seconds
+        if isinstance(ts, dict) and 'seconds' in ts:
+            return ts['seconds']
+        # String
+        try:
+            return parse(ts).timestamp()
+        except Exception:
+            return 0
+
+    exam_list.sort(key=lambda x: get_timestamp_seconds(x.get("timestamp")), reverse=True)
     
     return exam_list
