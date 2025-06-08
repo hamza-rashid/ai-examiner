@@ -218,7 +218,7 @@ function App() {
   return (
     <ChakraProvider theme={theme}>
       <Box minH="100vh" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" px={6} py={4}>
-        <Box textAlign="center" mt={{ base: 20, md: 40 }} mb={4}>
+        <Box textAlign="center" mt={{ base: 20, md: 85 }} mb={4}>
         <Heading
           fontSize={["4xl", "5xl", "5xl"]} // mobile, tablet, desktop
           fontWeight="bold"
