@@ -82,16 +82,6 @@ npm start
 - **Registered users**: 10 free credits per month
 - More credits coming soon!
 
-## Contributing 🤝
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
 ## License 📄
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -101,11 +91,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Hamza Rashid**
 - LinkedIn: [Hamza Rashid](https://www.linkedin.com/in/hamza-rashid-354257174/)
 - GitHub: [@hamza-rashid](https://github.com/hamza-rashid)
-
-## Acknowledgments 🙏
-
-- Thanks to all the examiners who helped train the AI model
-- Special thanks to the open-source community for their amazing tools and libraries
 
 ---
 
