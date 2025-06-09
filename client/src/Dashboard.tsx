@@ -112,7 +112,21 @@ function Dashboard() {
   }
 
   return (
-    <Box minH="100vh" w="100vw" fontFamily="Inter, sans-serif" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" display="flex" flexDirection="column" alignItems="center" justifyContent="flex-start" px={2} py={0}>
+    <Box
+      minH="100vh"
+      w="100vw"
+      fontFamily="Inter, sans-serif"
+      bgImage="linear-gradient(rgba(0,0,0,0) 27px, rgba(0,0,0,0.04) 28px), linear-gradient(90deg, rgba(0,0,0,0) 27px, rgba(0,0,0,0.02) 28px), url('/background.jpg')"
+      bgSize="28px 28px, 28px 28px, cover"
+      bgPosition="top left, top left, center"
+      bgRepeat="repeat, repeat, no-repeat"
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+      justifyContent="flex-start"
+      px={2}
+      py={0}
+    >
       <IconButton
         icon={<ArrowBackIcon />}
         aria-label="Back"

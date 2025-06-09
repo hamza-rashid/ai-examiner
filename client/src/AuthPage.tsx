@@ -46,9 +46,10 @@ function AuthPage() {
     <ChakraProvider theme={theme}>
       <Box
         minH="100vh"
-        bgImage="url('/background.jpg')"
-        bgSize="cover"
-        bgPosition="center"
+        bgImage="linear-gradient(rgba(0,0,0,0) 27px, rgba(0,0,0,0.04) 28px), linear-gradient(90deg, rgba(0,0,0,0) 27px, rgba(0,0,0,0.02) 28px), url('/background.jpg')"
+        bgSize="28px 28px, 28px 28px, cover"
+        bgPosition="top left, top left, center"
+        bgRepeat="repeat, repeat, no-repeat"
         px={4}
         position="relative"
         display="flex"

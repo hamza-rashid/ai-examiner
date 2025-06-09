@@ -95,7 +95,15 @@ const ExamPage = () => {
   }
 
   return (
-    <Box minH="100vh" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" px={2} py={10}>
+    <Box
+      minH="100vh"
+      bgImage="linear-gradient(rgba(0,0,0,0) 27px, rgba(0,0,0,0.04) 28px), linear-gradient(90deg, rgba(0,0,0,0) 27px, rgba(0,0,0,0.02) 28px), url('/background.jpg')"
+      bgSize="28px 28px, 28px 28px, cover"
+      bgPosition="top left, top left, center"
+      bgRepeat="repeat, repeat, no-repeat"
+      px={2}
+      py={10}
+    >
       <Box maxW="900px" mx="auto" bg="white" borderRadius="2xl" boxShadow="2xl" p={[4, 8]}>
         <HStack
           justifyContent="space-between"
