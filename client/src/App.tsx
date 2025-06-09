@@ -343,7 +343,7 @@ function App() {
                 Marking Breakdown
                 {!user && (
                   <Text as="span" fontSize="sm" color="orange.500" ml={3} fontWeight="semibold">
-                    <a href="/auth" style={{ textDecoration: "underline", color: "#3182ce", fontWeight: 600 }}>
+                    <a href="/auth" style={{ textDecoration: "underline", color: "orange", fontWeight: 600 }}>
                       Login
                     </a> to save your marked exam!
                   </Text>
