@@ -211,8 +211,19 @@ function App() {
   );
 
   return (
-      <Box minH="100vh" bgImage="url('/background.jpg')" bgSize="cover" bgPosition="center" px={6} py={4}>
-        <Box textAlign="center" mt={{ base: 20, md: 85 }} mb={4}>
+    <Box
+      minH="110vh"
+      display="flex"
+      flexDirection="column"
+      px={6}
+      py={4}
+      bgImage="linear-gradient(rgba(0,0,0,0) 27px, rgba(0,0,0,0.04) 28px), linear-gradient(90deg, rgba(0,0,0,0) 27px, rgba(0,0,0,0.02) 28px), url('/background.jpg')"
+      bgSize="28px 28px, 28px 28px, cover"
+      bgPosition="top left, top left, center"
+      bgRepeat="repeat, repeat, no-repeat"
+    >
+      <Box flex="1" minH="90vh" display="flex" flexDirection="column" justifyContent="flex-start">
+        <Box textAlign="center" mt={{ base: 20, md: 165 }} mb={4}>
           <Heading
             fontSize={["4xl", "5xl", "5xl"]} // mobile, tablet, desktop
             fontWeight="bold"
@@ -234,7 +245,13 @@ function App() {
           </Text>
         </Box>
 
-        <Box position="absolute" top={4} right={6} textAlign="right">
+        <Box
+          position={{ base: "absolute", md: "fixed" }}
+          top={4}
+          right={6}
+          textAlign="right"
+          zIndex={30}
+        >
           {user === undefined ? null : user ? (
             <>
               <Button
@@ -363,7 +380,49 @@ function App() {
           )}
         </Box>
       </Box>
-);
+
+      <Box
+        as="footer"
+        w="full"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        px={2}
+        py={3}
+        bg="transparent"
+        boxShadow="none"
+        zIndex={20}
+        fontFamily="Inter, sans-serif"
+      >
+        <img
+          src="/hamza_profile.png"
+          alt="Hamza profile"
+          style={{ width: 34, height: 34, borderRadius: '50%', border: '2px solid black', objectFit: 'cover', marginRight: 12 }}
+        />
+        <Text fontSize={{ base: 'sm', md: 'md' }} color="black" fontWeight="medium">
+          Built by{' '}
+          <a
+            href="https://www.linkedin.com/in/hamza-rashid-354257174/"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: 'underline', fontWeight: 'bold', color: 'inherit' }}
+          >
+            Hamza
+          </a>
+          {" — giving students examiners' eyes and AI precision. "}
+          <span role="img" aria-label="robot">🤖</span>{' '}
+          <a
+            href="https://github.com/hamza-rashid/ai-examiner"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ textDecoration: 'underline', fontWeight: 'bold', color: 'inherit' }}
+          >
+            View on GitHub
+          </a>
+        </Text>
+      </Box>
+    </Box>
+  );
 }
 
 export default App;
