@@ -202,19 +202,50 @@ async def mark_paper(request: Request, student: UploadFile = File(...), scheme: 
     parsed = parse_marking_output(raw_result)
     parsed["credits_used"] = used + 1
 
-    # Save exam result to Firestore if user is logged in
-    if not uid.startswith("anon:"):
+    # Save exam result to Firestore
+    exam_data = {
+        "timestamp": firestore.SERVER_TIMESTAMP,
+        "result": parsed,
+        "studentFileName": student.filename,
+        "schemeFileName": scheme.filename
+    }
+
+    if uid.startswith("anon:"):
+        # Store in anonymous collection with IP as identifier
+        exam_ref = db.collection("anonymous_exams").document()
+        exam_data["ip"] = uid.split(":")[1]  # Store IP for later matching
+        exam_ref.set(exam_data)
+    else:
+        # Store in regular exams collection for logged-in users
         exam_ref = db.collection("exams").document()
-        exam_data = {
-            "userId": uid,
-            "timestamp": firestore.SERVER_TIMESTAMP,
-            "result": parsed,
-            "studentFileName": student.filename,
-            "schemeFileName": scheme.filename
-        }
+        exam_data["userId"] = uid
         exam_ref.set(exam_data)
 
     return parsed
+
+@app.post("/link-anonymous-papers")
+async def link_anonymous_papers(request: Request):
+    uid = request.state.user
+    if not uid or uid.startswith("anon:"):
+        raise HTTPException(status_code=401, detail="Authentication required")
+    
+    # Get user's IP address
+    client_ip = request.client.host
+    
+    # Find all anonymous papers for this IP
+    anon_exams = db.collection("anonymous_exams").where("ip", "==", client_ip).get()
+    
+    # Link each anonymous paper to the user's account
+    for exam in anon_exams:
+        exam_data = exam.to_dict()
+        # Create new exam document in user's collection
+        new_exam_ref = db.collection("exams").document()
+        exam_data["userId"] = uid
+        new_exam_ref.set(exam_data)
+        # Delete the anonymous exam
+        exam.reference.delete()
+    
+    return {"message": "Anonymous papers linked successfully"}
 
 @app.get("/usage")
 async def get_usage(request: Request):
