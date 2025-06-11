@@ -20,7 +20,7 @@ An intelligent exam marking system that uses AI to grade GCSE papers with the pr
 ## Tech Stack 🛠
 - **Frontend**: React, TypeScript, Chakra UI (hosted on Vercel)
 - **Authentication**: Firebase
-- **Backend**: Python/FastAPI (hosted on Render)
+- **Backend**: Python/FastAPI (hosted on Render), OpenAI GPT 4.1-mini
 - **File Handling**: PDF processing
 - **Styling**: Chakra UI with custom theme
 
